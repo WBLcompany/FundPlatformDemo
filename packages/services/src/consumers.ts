@@ -107,7 +107,7 @@ async function notifications(ctx: Ctx, e: OutboxEvent) {
   }
   // Association users.
   const orgId = e.payload.org_id as string | undefined;
-  if (orgId && ["application.submitted", "application.info_requested", "grant.decided", "agreement.issued", "agreement.fully_signed", "deliverable.reminder", "deliverable.overdue", "deliverable.accepted", "deliverable.returned", "disbursement.executed", "disbursement.returned", "receipt.overdue", "association.suspended", "org_document.expiring", "bank_account.change_requested", "bank_account.acknowledged", "amendment.decided"].includes(e.event_type)) {
+  if (orgId && ["application.submitted", "application.info_requested", "grant.decided", "agreement.issued", "agreement.fully_signed", "deliverable.reminder", "deliverable.overdue", "deliverable.accepted", "deliverable.returned", "disbursement.executed", "disbursement.returned", "receipt.overdue", "association.suspended", "org_document.expiring", "bank_account.change_requested", "bank_account.acknowledged", "amendment.decided", "file.infected"].includes(e.event_type)) {
     const ppl = await ctx.tx.query<{ person_id: string }>("select person_id from iam.memberships where org_id = $1 and active", [orgId]);
     ppl.forEach((p) => recipients.add(p.person_id));
   }

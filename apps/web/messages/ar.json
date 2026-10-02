@@ -10,7 +10,8 @@
     "demoData": "بيانات توضيحية",
     "poweredBy": "مشغّل بواسطة وبل",
     "saved": "حُفظ",
-    "back": "رجوع"
+    "back": "رجوع",
+    "backToProject": "عُد إلى المشروع"
   },
   "nav": {
     "tasks": "مهامي",
@@ -58,7 +59,9 @@
     "generic": "تعذّر إكمال الإجراء. حاول مرة أخرى.",
     "forbidden": "لا تملك صلاحية هذا الإجراء.",
     "stale_version": "تغيّر هذا العنصر منذ فتحته. أعد التحميل ثم حاول.",
-    "not_found": "العنصر غير موجود أو لا تملك صلاحية الاطلاع."
+    "not_found": "العنصر غير موجود أو لا تملك صلاحية الاطلاع.",
+    "insufficient_budget": "الرصيد المتاح لا يكفي لحجز هذا المبلغ",
+    "otp_required": "أدخل رمز التحقق المرسل إلى الرقم الرسمي"
   },
   "staff": {
     "applicationsTitle": "الطلبات",
@@ -137,6 +140,30 @@
       "approved": "معتمد",
       "rejected": "مرفوض",
       "expired": "منتهي المهلة"
+    },
+    "msg": {
+      "amendmentSent": "أُرسل طلب التعديل إلى مسار الاعتماد",
+      "reportAcceptedOpen": "قُبل التقرير. لم يُقفل المشروع بعد: {blockers}",
+      "reportAcceptedClosed": "قُبل التقرير وأُقفل المشروع",
+      "reportAccepted": "قُبل التقرير",
+      "reportReturned": "أُعيد التقرير للجمعية",
+      "closed": "أُقفل المشروع",
+      "notClosed": "لم يُقفل بعد: {blockers}",
+      "actionRecorded": "سُجّل الإجراء"
+    },
+    "suspension": "التعليق",
+    "agreementOriginal": "{ref} (الأصل)",
+    "agreementAddendum": "{ref} (ملحق {n})",
+    "agreementSigned": "{ref} موقعة",
+    "byLoad": "حسب العبء (آلياً)",
+    "licenseRef": "ترخيص {n}",
+    "city": "المدينة",
+    "registration": "التسجيل",
+    "viaOtp": "برمز تحقق",
+    "viaLetter": "بخطاب رسمي",
+    "infoItem": {
+      "quote": "عرض سعر معتمد لأعلى بند في الموازنة",
+      "partnerLetter": "خطاب الشريك المنفذ إن وُجد"
     }
   },
   "reports": {
@@ -197,7 +224,8 @@
     "savePolicy": "احفظ البنود",
     "approvePolicy": "اعتمد السياسة",
     "draftPolicy": "اطلب مسودة من مانح",
-    "policyFiles": "ملفات السياسة"
+    "policyFiles": "ملفات السياسة",
+    "invalidJson": "الإعدادات ليست JSON صالحاً"
   },
   "portal": {
     "newApplication": "قدّم على البرنامج",
@@ -241,7 +269,22 @@
     "state": "الحالة",
     "installment": "الدفعة",
     "finalSubmitted": "أُرسل التقرير الختامي. يصلك الإشعار بعد مراجعته.",
-    "finalAccepted": "قُبل التقرير الختامي وأُقفل المشروع."
+    "finalAccepted": "قُبل التقرير الختامي وأُقفل المشروع.",
+    "uploadDocument": "ارفع الوثيقة",
+    "draft": "مسودة",
+    "stage": {
+      "submitted": "أُرسل الطلب",
+      "review": "الدراسة",
+      "approval": "الاعتماد",
+      "decision": "القرار",
+      "agreement": "الاتفاقية",
+      "project": "المشروع"
+    },
+    "infoSent": "أُرسل الاستكمال",
+    "agreementReady": "اتفاقية المنحة جاهزة: ارفع النسخة الموقعة من صاحب الصلاحية.",
+    "extractFailed": "تعذّر الاستخراج؛ أدخل البيانات يدوياً",
+    "documentSaved": "حُفظت الوثيقة",
+    "fileTooLarge": "الملف فارغ أو أكبر من 10 ميجابايت"
   },
   "operator": {
     "login": "دخول المشغّل",
@@ -264,5 +307,94 @@
     "account": "الحساب البنكي",
     "chain": "مسار الاعتماد",
     "blockers": "ما يمنع الصرف"
+  },
+  "status": {
+    "deliverable": {
+      "pending": "بانتظار الرفع",
+      "submitted": "بانتظار المراجعة",
+      "accepted": "مقبول",
+      "returned": "أُعيد للاستكمال",
+      "rejected": "مرفوض"
+    },
+    "project": {
+      "active": "قيد التنفيذ",
+      "suspended": "معلّق",
+      "closing": "قيد الإقفال",
+      "closed": "مُقفل"
+    },
+    "installment": {
+      "scheduled": "مجدولة",
+      "due": "مستحقة",
+      "ordered": "أمر صرف مفتوح",
+      "paid": "صُرفت",
+      "cancelled": "ملغاة"
+    },
+    "due": {
+      "late": "متأخر {days} يوم",
+      "today": "اليوم",
+      "in": "بعد {days} يوم"
+    },
+    "association": {
+      "active": "نشطة",
+      "pending_review": "بانتظار المراجعة",
+      "suspended": "موقوفة",
+      "rejected": "مرفوضة"
+    }
+  },
+  "ai": {
+    "attachment": "المرفق",
+    "notRequested": "لم يُطلب من مانح بعد",
+    "failed": "تعذّر",
+    "empty": "لا قيمة في المخرج"
+  },
+  "study": {
+    "complete": "الاكتمال",
+    "completeDetail": "{done} من {total} حقول مطلوبة",
+    "passed": "اجتاز",
+    "afterDays": "بعد {days} يوماً",
+    "decision": {
+      "approve": "موافقة",
+      "approve_modified": "موافقة بمبلغ معدّل",
+      "reject": "رفض"
+    }
+  },
+  "brief": {
+    "projectNow": "{status} · {paid} من {total} دفعات صُرفت",
+    "nextDeliverable": "التسليم التالي «{label}» في {date}",
+    "noDeliverables": "لا تسليمات معلقة",
+    "associationNow": "{n} طلبات، {open} مفتوحة",
+    "registrationWaiting": "التسجيل بانتظار مراجعتك",
+    "nothingWaiting": "لا شيء ينتظر الآن"
+  },
+  "finance": {
+    "afterFinalReport": "بعد التقرير الختامي",
+    "afterDeliverable": "بعد قبول التسليم",
+    "returnedToFinance": "أُعيد الأمر إلى المالية"
+  },
+  "committee": {
+    "priorGrants": "منح سابقة: {n} بمجموع {total}",
+    "noPriorGrants": "لا منح سابقة",
+    "minutes": "المحضر",
+    "meetingTitle": "عنوان الاجتماع",
+    "defaultTitle": "اجتماع اللجنة"
+  },
+  "common": {
+    "refresh": "حدّث"
+  },
+  "home": {
+    "approved": "المعتمد",
+    "disbursed": "المصروف",
+    "available": "المتاح في الميزانية"
+  },
+  "rationale": {
+    "action": {
+      "approve": "اعتمد",
+      "reject": "رفض",
+      "return": "أعاد بملاحظات",
+      "modify_amount": "عدّل المبلغ"
+    },
+    "approved": "موافقة بمبلغ {amount}",
+    "rejected": "اعتذار",
+    "pending": "لم يصدر بعد"
   }
 }

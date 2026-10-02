@@ -1,4 +1,5 @@
 "use server";
+import { t } from "@/lib/i18n";
 import { approvalService, orgService } from "@wbl/services";
 import { asUser } from "@/lib/auth";
 import { run } from "@/lib/actions";
@@ -10,7 +11,7 @@ export async function uploadMinutesAction(fd: FormData) {
     const body = new Uint8Array(await file.arrayBuffer());
     const text = file.type.startsWith("text/") ? new TextDecoder().decode(body) : null;
     const fileId = await orgService.storeFile(ctx, { name: file.name, mime: file.type || "application/octet-stream", body, ownerOrgId: null, text });
-    return approvalService.createMeeting(ctx, { title: String(fd.get("title") || "اجتماع اللجنة"), heldOn: String(fd.get("heldOn") || new Date().toISOString().slice(0, 10)), minutesFileId: fileId, applicationIds: ids });
+    return approvalService.createMeeting(ctx, { title: String(fd.get("title") || t("committee.defaultTitle")), heldOn: String(fd.get("heldOn") || new Date().toISOString().slice(0, 10)), minutesFileId: fileId, applicationIds: ids });
   }));
 }
 

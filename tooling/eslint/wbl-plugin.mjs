@@ -108,8 +108,33 @@ const logicalProperties = {
   },
 };
 
+/**
+ * Every UI string comes from the messages file (apps/web/messages/ar.json). Flags string literals,
+ * template text and JSX text that contain Arabic letters. Arabic punctuation alone («،») and a
+ * single letter (an enum code such as the أ–د performance rating) are allowed.
+ */
+const noArabicLiterals = {
+  meta: { type: "problem", schema: [], messages: {
+    literal: "Arabic text in code: move it to messages/ar.json and use t().",
+  } },
+  create(context) {
+    const letters = /[\u0621-\u064A]/g;
+    const check = (node, value) => {
+      if (typeof value !== "string") return;
+      const n = (value.match(letters) ?? []).length;
+      if (n >= 2) context.report({ node, messageId: "literal" });
+    };
+    return {
+      Literal(node) { if (node.regex) check(node, node.regex.pattern); else check(node, node.value); },
+      TemplateElement(node) { check(node, node.value.cooked); },
+      JSXText(node) { check(node, node.value); },
+    };
+  },
+};
+
 export default {
   rules: {
+    "no-arabic-literals": noArabicLiterals,
     "module-boundaries": moduleBoundaries,
     "no-service-role": noServiceRole,
     "no-hex-in-components": noHexInComponents,

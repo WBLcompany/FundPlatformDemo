@@ -1,4 +1,5 @@
 import "server-only";
+import { t } from "../i18n";
 import { approval as approvalDomain, framework } from "@wbl/domain";
 import { ai, approvalService, cycleService, queries, versionConfig, programOf, type Ctx } from "@wbl/services";
 import type { StudyFileVM } from "@wbl/ui/views";
@@ -40,8 +41,8 @@ export async function loadStudy(ctx: Ctx, id: string) {
     revealed,
     aiEnabled: donor.ai_enabled,
     checks: pv ? [
-      { key: "complete", label: "الاكتمال", passed: pv.completeness.done === pv.completeness.total, detail: `${pv.completeness.done} من ${pv.completeness.total} حقول مطلوبة` },
-      ...p.eligibility.rules.map((r) => { const hit = pv.eligibility.reasons.find((x) => x.ruleId === r.id); return { key: r.id, label: r.label ?? r.reason, passed: !hit, detail: hit ? hit.reason : "اجتاز", rule: r.reason }; }),
+      { key: "complete", label: t("study.complete"), passed: pv.completeness.done === pv.completeness.total, detail: t("study.completeDetail", { done: pv.completeness.done, total: pv.completeness.total }) },
+      ...p.eligibility.rules.map((r) => { const hit = pv.eligibility.reasons.find((x) => x.ruleId === r.id); return { key: r.id, label: r.label ?? r.reason, passed: !hit, detail: hit ? hit.reason : t("study.passed"), rule: r.reason }; }),
     ] : [],
     summary: aiState(out, donor.ai_enabled, (o) => (o as typeof open)?.summary?.text, evidenceOf(open?.summary?.evidence, files)),
     scores: p.criteria.map((c) => {
@@ -50,11 +51,11 @@ export async function loadStudy(ctx: Ctx, id: string) {
     }),
     maxScore: 5,
     budget: aiState(out, donor.ai_enabled, (o) => (o as typeof open)?.budget_flags?.map((b, i) => ({ id: String(i), item: b.item, amountHalalas: b.amount_halalas, flag: { reason: b.reason, evidence: evidenceOf(b.evidence, files) } }))),
-    schedule: aiState(out, donor.ai_enabled, (o) => (o as typeof open)?.schedule?.map((s, i) => ({ id: String(i), label: s.label, dueLabel: `بعد ${s.due_offset_days} يوماً`, amountHalalas: Math.round(((sealed?.recommendation?.amount_halalas ?? requested) * s.percent) / 100), deliverable: s.deliverable }))),
+    schedule: aiState(out, donor.ai_enabled, (o) => (o as typeof open)?.schedule?.map((s, i) => ({ id: String(i), label: s.label, dueLabel: t("study.afterDays", { days: s.due_offset_days }), amountHalalas: Math.round(((sealed?.recommendation?.amount_halalas ?? requested) * s.percent) / 100), deliverable: s.deliverable }))),
     recommendation: revealed && sealed?.recommendation ? { status: "ready", outputId: out!.id, value: { decision: sealed.recommendation.decision, amountHalalas: sealed.recommendation.amount_halalas, rationale: sealed.recommendation.rationale } } : aiState<{ decision: "approve" | "reject" | "approve_modified"; amountHalalas: number; rationale: string }>(out, donor.ai_enabled, () => undefined),
     history: history.map((h) => ({ ref: h.ref, title: h.title, outcome: statusLabel(h.status), amountHalalas: h.approved_halalas ?? h.requested_halalas ?? 0 })),
     attachments: [...files.entries()].map(([fid, name]) => ({ id: fid, name, href: `/api/files/${fid}` })),
-    judgement: { decision: sf?.recommendation ? ({ approve: "موافقة", approve_modified: "موافقة بمبلغ معدّل", reject: "رفض" } as Record<string, string>)[sf.recommendation] ?? null : null, amountHalalas: sf?.recommended_halalas ?? null, byName: sf?.judged_by_name ?? null },
+    judgement: { decision: sf?.recommendation ? t(`study.decision.${sf.recommendation}`) : null, amountHalalas: sf?.recommended_halalas ?? null, byName: sf?.judged_by_name ?? null },
   };
   // Manih's draft, offered as the editable starting point of the specialist's own judgement (never saved by itself).
   const aiDraft = donor.ai_enabled && out?.status === "ready" ? { summary: open?.summary?.text ?? "", schedule: (open?.schedule ?? []).map((s, i, all) => ({ ...s, condition: i === 0 ? "signature" : i === all.length - 1 ? "final_report" : "deliverable" })) } : null;

@@ -1,4 +1,5 @@
 "use server";
+import { t } from "@/lib/i18n";
 import { revalidatePath } from "next/cache";
 import { approvalService, financeService, orgService } from "@wbl/services";
 import { asUser } from "@/lib/auth";
@@ -28,7 +29,7 @@ export async function recheckAction(id: string) {
   revalidatePath(p(id));
 }
 export async function resolveAction(id: string, _: unknown, fd: FormData) {
-  const r = await run(() => asUser((ctx) => financeService.resolveReturn(ctx, id, String(fd.get("note") ?? ""))), "أُعيد الأمر إلى المالية");
+  const r = await run(() => asUser((ctx) => financeService.resolveReturn(ctx, id, String(fd.get("note") ?? ""))), t("finance.returnedToFinance"));
   revalidatePath(p(id));
   return r;
 }

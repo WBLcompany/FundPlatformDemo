@@ -244,3 +244,25 @@ describe("sweeps", () => {
 });
 
 void anon; void approvalService; void financeService; void projectService;
+
+describe("file scanning (T-24, architecture §8)", () => {
+  it("an upload waits in quarantine, becomes readable once clean, and an infected one stays blocked and is reported", async () => {
+    const org = await act("owner@albir.demo", async (ctx) => ctx.actor.grants.find((g) => g.orgId)!.orgId!);
+    const clean = await act("owner@albir.demo", (ctx) => orgService.storeFile(ctx, { name: "خطة.pdf", mime: "application/pdf", body: new TextEncoder().encode("%PDF-1.4 plan"), ownerOrgId: org }));
+    const eicar = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
+    const bad = await act("owner@albir.demo", (ctx) => orgService.storeFile(ctx, { name: "ملف.pdf", mime: "application/pdf", body: new TextEncoder().encode(eicar), ownerOrgId: org }));
+    const status = (id: string) => act("sara@almulhi.demo", async (ctx) => (await ctx.tx.one<{ scan_status: string }>("select scan_status from kernel.files where id = $1", [id])).scan_status);
+    expect(await status(clean)).toBe("quarantine");
+
+    const r = await worker.scanQuarantine(db, adapters, env);
+    expect(r.scanned).toBeGreaterThanOrEqual(2);
+    expect(await status(clean)).toBe("clean");
+    expect(await status(bad)).toBe("infected");
+
+    await drain(db, adapters);
+    const notified = await act("owner@albir.demo", (ctx) => ctx.tx.query<{ template: string }>("select template from kernel.notifications where template = 'file.infected'"));
+    expect(notified.length).toBeGreaterThan(0);
+    // Nothing left to scan: a second pass is a no-op.
+    expect((await worker.scanQuarantine(db, adapters, env)).scanned).toBe(0);
+  });
+});

@@ -1,4 +1,5 @@
 "use client";
+import { t } from "@/lib/i18n";
 import { useRef, useState } from "react";
 import { Alert } from "@wbl/ui";
 import { DeliverableUploadView } from "@wbl/ui/views";
@@ -18,7 +19,7 @@ export function UploadClient({ id, projectId, label, dueLabel, done: initial }: 
         if (r.ok) setDone(true); else setErr(r.error);
       }} />
       {err && <div className="mx-auto max-w-xl px-4"><Alert tone="danger">{err}</Alert></div>}
-      <p className="mx-auto max-w-xl px-4"><a className="text-link underline" href={`/portal/projects/${projectId}`}>←</a></p>
+      <p className="mx-auto max-w-xl px-4"><a className="text-link underline" href={`/portal/projects/${projectId}`}>{t("app.backToProject")}</a></p>
     </div>
   );
 }

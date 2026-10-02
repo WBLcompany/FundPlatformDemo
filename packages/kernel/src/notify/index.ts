@@ -25,6 +25,7 @@ export const TEMPLATES: Partial<Record<EventType, Template>> = {
   "disbursement.returned": { subject: "أُرجع أمر الصرف {ref}", body: "السبب: {reason}" },
   "receipt.overdue": { subject: "مستند استلام متأخر", body: "لم يصل مستند استلام الدفعة {ref}، وأُوقفت التعاملات حتى رفعه.", whatsappTemplate: "receipt_overdue_v1" },
   "association.suspended": { subject: "إيقاف التعاملات مؤقتاً", body: "أُوقفت التعاملات مع الجمعية: {reason}. تُرفع آلياً عند المعالجة." },
+  "file.infected": { subject: "رُفض ملف مرفوع", body: "لم يُقبل الملف «{name}» لأن الفحص وجد فيه محتوى ضاراً. ارفعوا نسخة سليمة منه." },
   "org_document.expiring": { subject: "وثيقة تقترب من الانتهاء", body: "تنتهي «{doc}» في {date}. ارفعوا النسخة المحدثة قبل ذلك حتى لا تسقط الجاهزية.", whatsappTemplate: "doc_expiring_v1" },
   "bank_account.change_requested": { subject: "طلب تغيير الحساب البنكي", body: "استلمنا طلب تغيير الحساب البنكي إلى حساب ينتهي بـ {last4}. لن تُصرف دفعة عليه قبل إقرار المالية." },
   "bank_account.acknowledged": { subject: "أُقرّ الحساب البنكي", body: "أقرت المالية الحساب المنتهي بـ {last4}." },

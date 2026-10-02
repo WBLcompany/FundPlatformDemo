@@ -3,7 +3,7 @@ import { asUser } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
-const L: Record<string, string> = { active: "نشطة", pending_review: "بانتظار المراجعة", suspended: "موقوفة", rejected: "مرفوضة" };
+const L: Record<string, string> = Object.fromEntries(["active", "pending_review", "suspended", "rejected"].map((k) => [k, t(`status.association.${k}`)]));
 
 export default async function Associations() {
   const rows = await asUser((ctx) => ctx.tx.query<{ id: string; name: string; license_no: string; city: string | null; status: string }>("select id, name, license_no, city, status from org.associations order by name"), { readOnly: true });

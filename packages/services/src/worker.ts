@@ -54,6 +54,32 @@ export async function drain(db: Database, adapters: Adapters, env: Env, maxRound
   return total;
 }
 
+/**
+ * T-24 · scan files waiting in quarantine (oldest first) and mark them clean or infected. A file is
+ * served only when clean (/api/files); an infected one stays blocked and its uploader is told.
+ */
+export async function scanQuarantine(db: Database, adapters: Adapters, env: Env, limit = 20) {
+  let scanned = 0, infected = 0;
+  for (const tenant of await db.tenantIds()) {
+    await withSystem(db, tenant, { adapters, env, now: new Date() }, async (ctx) => {
+      const files = await ctx.tx.query<{ id: string; storage_path: string; owner_org_id: string | null; name: string }>(
+        "select id, storage_path, owner_org_id, name from kernel.files where scan_status = 'quarantine' order by created_at limit $1", [limit]);
+      for (const f of files) {
+        const body = await adapters.storage.get(f.storage_path);
+        if (!body) continue; // object not written yet; retried on the next pass
+        const verdict = await adapters.av.scan(body);
+        await ctx.tx.query("update kernel.files set scan_status = $2 where id = $1 and scan_status = 'quarantine'", [f.id, verdict]);
+        scanned++;
+        if (verdict === "infected") {
+          infected++;
+          await ctx.tx.emit({ type: "file.infected", entityKind: "file", entityId: f.id, payload: { name: f.name, org_id: f.owner_org_id } });
+        }
+      }
+    });
+  }
+  return { scanned, infected };
+}
+
 export async function runSweeps(db: Database, adapters: Adapters, env: Env, now = new Date()) {
   const out: Record<string, unknown> = {};
   for (const tenant of await db.tenantIds()) {

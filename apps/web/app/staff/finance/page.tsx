@@ -19,7 +19,7 @@ export default async function Finance() {
     });
     return {
       awaiting: h.awaiting.map(r), returned: h.returned.map(r),
-      upcoming: h.upcoming.map((u) => ({ id: u.id, ref: u.project_ref, association: resolveRef(ctx.actor, { kind: "association", id: u.association_id, label: u.association_name, orgId: u.association_id }), amountHalalas: u.amount_halalas, state: u.label, tone: "neutral" as const, href: null, dueLabel: u.condition === "final_report" ? "بعد التقرير الختامي" : "بعد قبول التسليم" })),
+      upcoming: h.upcoming.map((u) => ({ id: u.id, ref: u.project_ref, association: resolveRef(ctx.actor, { kind: "association", id: u.association_id, label: u.association_name, orgId: u.association_id }), amountHalalas: u.amount_halalas, state: u.label, tone: "neutral" as const, href: null, dueLabel: u.condition === "final_report" ? t("finance.afterFinalReport") : t("finance.afterDeliverable") })),
     };
   }, { readOnly: true });
   return (

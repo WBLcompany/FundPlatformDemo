@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { iam } from "@wbl/domain";
 import { queries } from "@wbl/services";
 import { ExecutiveHomeView, ManagerHomeView } from "@wbl/ui/views";
@@ -23,7 +24,7 @@ export default async function Home() {
   if (d.exec) {
     return <OrderClient initial={d.home.order}>{(order, setOrder) => (
       <ExecutiveHomeView order={order} onReorder={setOrder} decide={waiting}
-        money={[{ label: "المعتمد", valueHalalas: d.home.money.approved, href: "/staff/applications?status=approved" }, { label: "المصروف", valueHalalas: d.home.money.disbursed, href: "/staff/reports" }, { label: "المتاح في الميزانية", valueHalalas: d.home.money.available, href: null }]}
+        money={[{ label: t("home.approved"), valueHalalas: d.home.money.approved, href: "/staff/applications?status=approved" }, { label: t("home.disbursed"), valueHalalas: d.home.money.disbursed, href: "/staff/reports" }, { label: t("home.available"), valueHalalas: d.home.money.available, href: null }]}
         team={d.team} />)}</OrderClient>;
   }
   return <ManagerHomeView waiting={[...waiting, ...d.home.late.map((r) => ({ id: r.id, ref: r.ref, title: r.title, association: r.association, program: r.program, stage: statusLabel(r.status), stageTone: "late" as const, requestedHalalas: r.requested_halalas, href: `/staff/applications/${r.id}` }))]}

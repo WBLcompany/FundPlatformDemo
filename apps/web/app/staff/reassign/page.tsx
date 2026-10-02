@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { queries } from "@wbl/services";
 import { asUser } from "@/lib/auth";
 import { appTone, statusLabel } from "@/lib/vm/status";
@@ -13,5 +14,5 @@ export default async function Reassign() {
     return { apps, staff };
   }, { readOnly: true });
   return <ReassignClient applications={d.apps.map((a) => ({ id: a.id, ref: a.ref, title: `${a.title} — ${a.assignee ?? ""}`, association: a.association, program: a.program, stage: statusLabel(a.status), stageTone: appTone[a.status] ?? "neutral", requestedHalalas: a.requested_halalas, href: null }))}
-    recipients={[{ value: "", label: "حسب العبء (آلياً)" }, ...d.staff.map((s) => ({ value: s.id, label: s.full_name }))]} />;
+    recipients={[{ value: "", label: t("staff.byLoad") }, ...d.staff.map((s) => ({ value: s.id, label: s.full_name }))]} />;
 }

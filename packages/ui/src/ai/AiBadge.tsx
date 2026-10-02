@@ -11,7 +11,7 @@ export function AiBadge({ source = "manih", className }: { source?: "manih" | "m
       data-ai-badge
     >
       <Icon name="ai" size={14} />
-      {source === "manih" ? t("ai.badge") : "محسن"}
+      {source === "manih" ? t("ai.badge") : t("ai.badgeMohsen")}
     </span>
   );
 }

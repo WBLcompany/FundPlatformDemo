@@ -8,7 +8,7 @@ import { defineConfig } from "@playwright/test";
 const PORT = Number(process.env.E2E_PORT ?? 3200);
 const DB = "grants_e2e";
 const DATABASE_URL = `postgres://authenticator:authenticator@localhost:54329/${DB}`;
-const env = { DATABASE_URL, APP_URL: `http://localhost:${PORT}`, STORAGE_ROOT: "../../.storage-e2e", OPERATOR_TOKEN: "e2e-operator", SESSION_SECRET: "e2e-session-secret-not-for-production", DATA_MASTER_KEY: "e2e-master-key-not-for-production", MANIH_WEBHOOK_SECRET: "e2e-manih-secret", OTP_SALT: "e2e-otp-salt", SWEEP_INTERVAL_MS: "5000", OUTBOX_INTERVAL_MS: "500" };
+const env = { DATABASE_URL, APP_URL: `http://localhost:${PORT}`, STORAGE_ROOT: "../../.storage-e2e", OPERATOR_TOKEN: "e2e-operator", SESSION_SECRET: "e2e-session-secret-not-for-production", DATA_MASTER_KEY: "e2e-master-key-not-for-production", MANIH_WEBHOOK_SECRET: "e2e-manih-secret", OTP_SALT: "e2e-otp-salt", SWEEP_INTERVAL_MS: "5000", OUTBOX_INTERVAL_MS: "500", SCAN_INTERVAL_MS: "500" };
 
 export default defineConfig({
   testDir: "./e2e",

@@ -28,11 +28,11 @@ export default async function Track({ params }: { params: Promise<{ id: string }
   const { app } = d;
   const current = cycle.ASSOCIATION_STAGE[app.status].key;
   const idx = cycle.STAGE_ORDER.indexOf(current as (typeof cycle.STAGE_ORDER)[number]);
-  const labels: Record<string, string> = { submitted: "أُرسل الطلب", review: "الدراسة", approval: "الاعتماد", decision: "القرار", agreement: "الاتفاقية", project: "المشروع" };
+  const labels: Record<string, string> = Object.fromEntries(["submitted", "review", "approval", "decision", "agreement", "project"].map((k) => [k, t(`portal.stage.${k}`)]));
   const stages: StageVM[] = cycle.STAGE_ORDER.map((k, i) => ({ key: k, label: labels[k]!, state: i < idx ? "done" : i === idx ? "current" : "upcoming", atLabel: k === "submitted" ? fmtDate(app.submitted_at) : undefined }));
-  async function answer(_: unknown, fd: FormData) { "use server"; const r = await run(() => asUser((ctx) => cycleService.answerInfo(ctx, id, String(fd.get("note") ?? ""))), "أُرسل الاستكمال"); revalidatePath(`/portal/applications/${id}`); return r; }
+  async function answer(_: unknown, fd: FormData) { "use server"; const r = await run(() => asUser((ctx) => cycleService.answerInfo(ctx, id, String(fd.get("note") ?? ""))), t("portal.infoSent")); revalidatePath(`/portal/applications/${id}`); return r; }
   async function withdraw() { "use server"; await run(() => asUser((ctx) => cycleService.withdraw(ctx, id))); revalidatePath(`/portal/applications/${id}`); }
-  const waiting = d.info ? d.info.message : d.agreement?.status === "issued" ? "اتفاقية المنحة جاهزة: ارفع النسخة الموقعة من صاحب الصلاحية." : null;
+  const waiting = d.info ? d.info.message : d.agreement?.status === "issued" ? t("portal.agreementReady") : null;
   return (
     <div className="flex flex-col">
       <ApplicationTrackView application={{ id, ref: app.ref ?? "", title: app.title, association: { kind: "association", id: app.association_id, label: d.assoc.name }, program: "", stage: cycle.ASSOCIATION_STAGE[app.status].label, stageTone: appTone[app.status] ?? "neutral", requestedHalalas: app.requested_halalas ?? 0, href: null }}

@@ -16,7 +16,7 @@ export function toMessage(e: unknown): string {
   if (e instanceof DbError) {
     if (e.isStaleVersion) return t("errors.stale_version");
     if (e.isPermission) return t("errors.forbidden");
-    const m = /insufficient_budget/.test(e.message) ? "الرصيد المتاح لا يكفي لحجز هذا المبلغ" : /otp_required/.test(e.message) ? "أدخل رمز التحقق المرسل إلى الرقم الرسمي" : null;
+    const m = /insufficient_budget/.test(e.message) ? t("errors.insufficient_budget") : /otp_required/.test(e.message) ? t("errors.otp_required") : null;
     if (m) return m;
   }
   console.error(JSON.stringify({ level: "error", event: "action_failed", error: String((e as Error)?.message ?? e) }));

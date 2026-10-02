@@ -1,0 +1,9 @@
+{
+  "name": "@wbl/evals",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "evals": "tsx src/run.ts", "typecheck": "tsc --noEmit", "test": "vitest run", "lint": "eslint src" },
+  "dependencies": { "@wbl/adapters": "workspace:*" },
+  "devDependencies": { "@types/node": "^22.10.0", "tsx": "^4.19.0" }
+}

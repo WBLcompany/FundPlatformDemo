@@ -25,6 +25,12 @@ export default tseslint.config(
     rules: { "wbl/no-hex-in-components": "error", "wbl/logical-properties": "error" },
   },
   {
+    // Invariant: every UI string comes from messages/ar.json (packages/ui reads its own i18n JSON).
+    files: ["apps/web/app/**/*.{ts,tsx}", "apps/web/lib/**/*.{ts,tsx}", "apps/web/components/**/*.{ts,tsx}", "packages/ui/src/**/*.{ts,tsx}"],
+    ignores: ["**/*.test.*"],
+    rules: { "wbl/no-arabic-literals": "error" },
+  },
+  {
     files: ["**/*.mjs", "scripts/**", "tooling/**"],
     languageOptions: { globals: { process: "readonly", console: "readonly", URL: "readonly" } },
   },

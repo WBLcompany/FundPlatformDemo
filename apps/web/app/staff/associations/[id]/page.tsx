@@ -24,7 +24,7 @@ export default async function Association({ params }: { params: Promise<{ id: st
     const activity = await queries.activity(ctx, "association", id);
     const donor = await ctx.tx.one<{ ai_enabled: boolean }>("select ai_enabled from platform.donors where id = app.tenant()");
     const open = apps.filter((x) => ["submitted", "in_review", "awaiting_info", "in_approval"].includes(x.status)).length;
-    const brief = await ai.runSyncTask(ctx, { task: "entity.brief", subjectKind: "association", subjectId: id, inputs: { now: `${apps.length} طلبات، ${open} مفتوحة`, waiting: a.status === "pending_review" ? "التسجيل بانتظار مراجعتك" : "لا شيء ينتظر الآن" } });
+    const brief = await ai.runSyncTask(ctx, { task: "entity.brief", subjectKind: "association", subjectId: id, inputs: { now: t("brief.associationNow", { n: apps.length, open }), waiting: a.status === "pending_review" ? t("brief.registrationWaiting") : t("brief.nothingWaiting") } });
     return { a, apps, spent: spent.s, evals, activity, aiOn: donor.ai_enabled, brief,
       refs: apps.map((x) => ({ x, ref: resolveRef(ctx.actor, { kind: "application", id: x.id, label: `${x.ref} ${x.title}`, orgId: id }) })) };
   });
@@ -39,9 +39,9 @@ export default async function Association({ params }: { params: Promise<{ id: st
           <form action={review.bind(null, false)}><SubmitButton variant="danger">{t("staff.letterReject")}</SubmitButton></form>
         </div>
       )}
-      <AssociationPageView name={d.a.name} reference={`ترخيص ${d.a.license_no}`} status={{ tone: d.a.status === "active" ? "done" : "near", label: d.a.status }}
+      <AssociationPageView name={d.a.name} reference={t("staff.licenseRef", { n: d.a.license_no })} status={{ tone: d.a.status === "active" ? "done" : "near", label: t(`status.association.${d.a.status}`) }}
         brief={aiState(d.brief.id ? { id: d.brief.id, status: d.brief.status, output: d.brief.output as Record<string, unknown> | null, error: null } : null, d.aiOn, (o) => ({ now: String(o.now), waiting: String(o.waiting) }))}
-        facts={[{ label: "المدينة", value: d.a.city ?? "—" }, { label: "التسجيل", value: d.a.registered_via === "otp" ? "برمز تحقق" : "بخطاب رسمي" }]}
+        facts={[{ label: t("staff.city"), value: d.a.city ?? "—" }, { label: t("staff.registration"), value: d.a.registered_via === "otp" ? t("staff.viaOtp") : t("staff.viaLetter") }]}
         applications={d.refs.map(({ x, ref }) => ({ id: x.id, entity: ref, stage: statusLabel(x.status), tone: appTone[x.status] ?? "neutral" }))}
         grants={d.refs.filter(({ x }) => x.approved_halalas).map(({ x, ref }) => ({ id: x.id, entity: ref, amountHalalas: x.approved_halalas ?? 0 }))}
         spentHalalas={Number(d.spent)} rating={d.a.rating}

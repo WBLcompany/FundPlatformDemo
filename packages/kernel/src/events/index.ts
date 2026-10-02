@@ -5,7 +5,7 @@
  */
 export const EVENT_TYPES = [
   "association.registered", "association.letter_reviewed", "association.suspended", "association.reinstated",
-  "org_document.uploaded", "org_document.confirmed", "org_document.expiring", "org_document.expired",
+  "org_document.uploaded", "org_document.confirmed", "org_document.expiring", "org_document.expired", "file.infected",
   "application.created", "application.submitted", "application.assigned", "application.reassigned", "application.withdrawn",
   "application.info_requested", "application.info_answered", "application.recommended", "application.coi_declared",
   "study_file.requested", "study_file.ready", "assessment.recorded",

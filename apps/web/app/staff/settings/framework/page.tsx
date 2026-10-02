@@ -21,7 +21,7 @@ export default async function Framework() {
   async function save(_: unknown, fd: FormData) {
     "use server";
     let parsed: unknown;
-    try { parsed = JSON.parse(String(fd.get("config"))); } catch { return { ok: false, error: "JSON غير صالح" }; }
+    try { parsed = JSON.parse(String(fd.get("config"))); } catch { return { ok: false, error: t("settings.invalidJson") }; }
     const r = await run(() => asUser((ctx) => frameworkService.saveDraft(ctx, parsed, Number(fd.get("revision")))), t("app.saved"));
     revalidatePath("/staff/settings/framework");
     return r;

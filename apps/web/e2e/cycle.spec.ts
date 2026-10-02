@@ -111,6 +111,10 @@ for (const aiEnabled of [true, false]) {
 
       const agreementId = sql(`select id from project.agreements where application_id = '${appId}'`);
       const mgr = await login(browser, "manager@almulhi.demo");
+      // T-24: the upload is served only after the worker has scanned it clean.
+      const signedFile = sql(`select signed_file_id from project.agreements where id = '${agreementId}'`);
+      await until(`select scan_status from kernel.files where id = '${signedFile}'`, "clean");
+      expect((await mgr.request.get(`/api/files/${signedFile}`)).status()).toBe(200);
       await mgr.goto(`/staff/agreements/${agreementId}`);
       await mgr.getByRole("button", { name: "وقّع عن المانح" }).click();
       await expect(mgr.getByText("اكتمل التوقيعان. أُنشئ المشروع وخطة الدفعات.")).toBeVisible();

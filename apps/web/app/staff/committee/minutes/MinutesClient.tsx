@@ -1,4 +1,5 @@
 "use client";
+import { t } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Alert, Button, Card, TextField } from "@wbl/ui";
@@ -19,10 +20,10 @@ export function MinutesClient({ meetingId, ready, extraction }: { meetingId: str
     : !extraction || extraction.status === "disabled" ? { status: "ready", value: manual, outputId: "manual" }
     : extraction.status === "pending" ? { status: "pending", etaSeconds: 40 }
     : extraction.status === "failed" ? { status: "ready", value: manual, outputId: "manual" }
-    : { status: "ready", outputId: extraction.outputId, value: extraction.decisions.flatMap((d): ExtractedDecision[] => { const r = ready.find((x) => x.ref === d.application_ref); return r ? [{ applicationId: r.id, ref: r.ref, title: r.title, decision: d.decision, amountHalalas: d.amount_halalas ?? r.amount, evidence: d.evidence ? { fileId: d.evidence.file_id, fileName: "المحضر", page: d.evidence.page, span: null, excerpt: d.evidence.excerpt } : null }] : []; }) };
+    : { status: "ready", outputId: extraction.outputId, value: extraction.decisions.flatMap((d): ExtractedDecision[] => { const r = ready.find((x) => x.ref === d.application_ref); return r ? [{ applicationId: r.id, ref: r.ref, title: r.title, decision: d.decision, amountHalalas: d.amount_halalas ?? r.amount, evidence: d.evidence ? { fileId: d.evidence.file_id, fileName: t("committee.minutes"), page: d.evidence.page, span: null, excerpt: d.evidence.excerpt } : null }] : []; }) };
   return (
     <div className="flex flex-col gap-4">
-      {!meetingId && <Card><TextField label="عنوان الاجتماع" value={title} onChange={(e) => setTitle(e.target.value)} /></Card>}
+      {!meetingId && <Card><TextField label={t("committee.meetingTitle")} value={title} onChange={(e) => setTitle(e.target.value)} /></Card>}
       <CommitteeMinutesView extraction={state} done={done}
         onUpload={async (file) => {
           const fd = new FormData(); fd.set("file", file); fd.set("title", title); fd.set("ids", JSON.stringify(ready.map((r) => r.id)));
@@ -34,7 +35,7 @@ export function MinutesClient({ meetingId, ready, extraction }: { meetingId: str
           const r = await confirmAction(meetingId, rows.map((x) => ({ applicationId: x.applicationId, decision: x.decision, amountHalalas: x.amountHalalas })));
           if (r.ok) setDone(true); else setErr(r.error);
         }} />
-      {extraction?.status === "pending" && <Button onClick={() => router.refresh()}>تحديث</Button>}
+      {extraction?.status === "pending" && <Button onClick={() => router.refresh()}>{t("common.refresh")}</Button>}
       {err && <Alert tone="danger">{err}</Alert>}
     </div>
   );

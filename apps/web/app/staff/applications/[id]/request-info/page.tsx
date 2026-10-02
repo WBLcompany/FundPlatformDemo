@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 import { ai, cycleService } from "@wbl/services";
 import { asUser } from "@/lib/auth";
@@ -15,7 +16,7 @@ export default async function RequestInfo({ params }: { params: Promise<{ id: st
     const out = await ai.latestOutput(ctx, id, "message.draft");
     const donor = await ctx.tx.one<{ ai_enabled: boolean }>("select ai_enabled from platform.donors where id = app.tenant()");
     const pv = await cycleService.preview(ctx, id);
-    const missing = [...pv.completeness.missing.map((k) => pv.program.form.properties[k]?.title ?? k), "عرض سعر معتمد لأعلى بند في الموازنة", "خطاب الشريك المنفذ إن وُجد"];
+    const missing = [...pv.completeness.missing.map((k) => pv.program.form.properties[k]?.title ?? k), t("staff.infoItem.quote"), t("staff.infoItem.partnerLetter")];
     return { ref: app.ref ?? "", draft: aiState(out, donor.ai_enabled, (o) => String((o as { text?: string }).text ?? "")), missing };
   });
   if (!d) notFound();

@@ -1,4 +1,5 @@
 import "server-only";
+import { t } from "../i18n";
 import { cycle, framework } from "@wbl/domain";
 import { currentVersion, orgService, type Ctx } from "@wbl/services";
 import type { ApplicationRow, DocumentVM, ReadinessItem } from "@wbl/ui/views";
@@ -36,9 +37,9 @@ export async function portalHome(ctx: Ctx) {
   const labels = Object.fromEntries(cfg.documentTypes.map((d) => [d.key, d.label]));
   return {
     org, name: assoc.name, cfg,
-    readiness: r.items.map((i): ReadinessItem => ({ key: i.key, label: i.label, ok: i.ok, reason: i.reason, actionHref: i.documentType ? "/portal/documents" : null, actionLabel: i.documentType ? "ارفع الوثيقة" : undefined })),
+    readiness: r.items.map((i): ReadinessItem => ({ key: i.key, label: i.label, ok: i.ok, reason: i.reason, actionHref: i.documentType ? "/portal/documents" : null, actionLabel: i.documentType ? t("portal.uploadDocument") : undefined })),
     programs: programs.map((p) => ({ id: p.id, name: p.name, closesAt: p.window.closesAt, href: `/portal/applications/new?program=${p.id}` })),
-    applications: apps.map((a): ApplicationRow => ({ id: a.id, ref: a.ref ?? "مسودة", title: a.title || "—", association: { kind: "association", id: org, label: assoc.name }, program: cfg.programs.find((p) => p.id === a.program_id)?.name ?? "", stage: cycle.ASSOCIATION_STAGE[a.status].label, stageTone: appTone[a.status] ?? "neutral", requestedHalalas: a.requested_halalas ?? 0, href: a.status === "draft" ? `/portal/applications/${a.id}/edit` : `/portal/applications/${a.id}` })),
+    applications: apps.map((a): ApplicationRow => ({ id: a.id, ref: a.ref ?? t("portal.draft"), title: a.title || "—", association: { kind: "association", id: org, label: assoc.name }, program: cfg.programs.find((p) => p.id === a.program_id)?.name ?? "", stage: cycle.ASSOCIATION_STAGE[a.status].label, stageTone: appTone[a.status] ?? "neutral", requestedHalalas: a.requested_halalas ?? 0, href: a.status === "draft" ? `/portal/applications/${a.id}/edit` : `/portal/applications/${a.id}` })),
     documents: docs.map((d): DocumentVM => ({ id: d.id, type: labels[d.doc_type] ?? d.doc_type, number: d.number ?? undefined, expiresAt: d.expiry_date, state: d.state, fileName: d.file_name ?? "" })),
     invitations, amendments, todo,
   };

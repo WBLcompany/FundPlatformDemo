@@ -1,3 +1,5 @@
+import { t } from "@/lib/i18n";
+import { formatMoney } from "@wbl/ui";
 import { approvalService, ai } from "@wbl/services";
 import { CommitteePackView } from "@wbl/ui/views";
 import { resolveRef } from "@wbl/kernel";
@@ -19,7 +21,7 @@ export default async function Committee() {
         id: r.subject_id, ref: r.ref, title: r.title, association: resolveRef(ctx.actor, { kind: "association", id: r.association_id, label: r.association_name, orgId: r.association_id }),
         summary: aiState(out, donor.ai_enabled, (o) => (o as { summary?: { text: string } }).summary?.text),
         recommendation: sf?.rationale ?? "—", amountHalalas: r.amount_halalas,
-        historyLine: prior.n ? `منح سابقة: ${prior.n} بمجموع ${(prior.s / 100).toLocaleString("en-US")} ريال` : "لا منح سابقة",
+        historyLine: prior.n ? t("committee.priorGrants", { n: prior.n, total: formatMoney(prior.s) }) : t("committee.noPriorGrants"),
       };
     }));
   }, { readOnly: true });

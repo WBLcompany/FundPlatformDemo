@@ -18,6 +18,14 @@ async function outboxLoop() {
     await new Promise((r) => setTimeout(r, OUTBOX_MS));
   }
 }
+const SCAN_MS = Number(process.env.SCAN_INTERVAL_MS ?? 2000);
+async function scanLoop() {
+  while (!stopping) {
+    try { const r = await worker.scanQuarantine(db, adapters, env); if (r.scanned) console.log(JSON.stringify({ level: "info", event: "scanned", ...r })); }
+    catch (e) { console.error(JSON.stringify({ level: "error", event: "scan_loop", error: String(e) })); }
+    await new Promise((r) => setTimeout(r, SCAN_MS));
+  }
+}
 async function sweepLoop() {
   while (!stopping) {
     try { const r = await worker.runSweeps(db, adapters, env); console.log(JSON.stringify({ level: "info", event: "sweeps", result: r })); }
@@ -29,4 +37,5 @@ process.on("SIGTERM", () => { stopping = true; void Database.closeAll(); });
 process.on("SIGINT", () => { stopping = true; void Database.closeAll(); process.exit(0); });
 console.log(JSON.stringify({ level: "info", event: "worker_started", manih: adapters.manih.name }));
 void outboxLoop();
+void scanLoop();
 void sweepLoop();
