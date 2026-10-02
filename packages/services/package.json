@@ -1,0 +1,16 @@
+{
+  "name": "@wbl/services",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./*": "./src/*.ts" },
+  "scripts": { "lint": "eslint src", "typecheck": "tsc --noEmit", "test": "vitest run" },
+  "dependencies": {
+    "@wbl/adapters": "workspace:*",
+    "@wbl/domain": "workspace:*",
+    "@wbl/kernel": "workspace:*",
+    "@wbl/rules": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": { "@types/node": "^22.10.0" }
+}

@@ -15,7 +15,11 @@
     "@wbl/domain": "workspace:*",
     "@wbl/kernel": "workspace:*",
     "pg": "8.23.1",
-    "tsx": "4.23.15"
+    "tsx": "4.23.15",
+    "@wbl/services": "workspace:*"
   },
-  "devDependencies": { "@types/node": "^22.10.0", "@types/pg": "^8.15.0" }
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.15.0"
+  }
 }

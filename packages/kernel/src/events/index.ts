@@ -20,7 +20,7 @@ export const EVENT_TYPES = [
   "amendment.requested", "amendment.decided",
   "final_report.submitted", "final_report.decided",
   "framework.version_approved", "policy.approved",
-  "ai.task_settled", "sla.breached", "membership.changed", "invitation.sent", "invitation.responded",
+  "ai.task_requested", "ai.task_settled", "sla.breached", "membership.changed", "invitation.sent", "invitation.responded",
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
