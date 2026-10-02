@@ -58,7 +58,8 @@ export async function saveForm(ctx: Ctx, id: string, data: Record<string, unknow
   if (app.status !== "draft" && app.status !== "awaiting_info") throw new DomainError("locked", "لا يُعدَّل الطلب بعد إرساله إلا عند طلب الاستكمال");
   const cfg = (await versionConfig(ctx.tx, app.framework_version_id)).config;
   const p = programOf(cfg, app.program_id);
-  const clean: Record<string, unknown> = {};
+  // Keys outside the form schema are dropped, except platform bookkeeping (__attachments).
+  const clean: Record<string, unknown> = Object.fromEntries(Object.entries(app.form_data).filter(([k]) => k.startsWith("__")));
   for (const k of Object.keys(p.form.properties)) if (k in data) clean[k] = data[k];
   const errors = framework.validateForm(p.form, clean, { partial: true });
   const mapped = framework.mappedValues(p.form, clean);
@@ -140,10 +141,14 @@ export async function requestStudyFile(ctx: Ctx, id: string) {
   const history = await ctx.tx.query("select ref, title, status, approved_halalas from cycle.applications where association_id = $1 and id <> $2 and status <> 'draft'", [app.association_id, id]);
   const budgetText = String(app.form_data.budgetLines ?? "");
   const budget = budgetText.split("\n").map((l) => l.split(/[:：]/)).filter((x) => x.length === 2).map(([item, amt]) => ({ item: item!.trim(), amount_halalas: Math.round(Number(String(amt).replace(/[^\d.]/g, "")) * 100) })).filter((b) => b.item && Number.isFinite(b.amount_halalas));
+  const attachmentIds = (app.form_data.__attachments as string[] | undefined) ?? [];
+  const attachments = attachmentIds.length ? await ctx.tx.query<{ id: string; name: string; text_content: string | null }>("select id, name, text_content from kernel.files where id = any($1)", [attachmentIds]) : [];
+  const { __attachments: _a, ...form } = app.form_data;
   return requestTask(ctx, {
     task: "application.study_file", subjectKind: "application", subjectId: id, frameworkVersionId: app.framework_version_id,
     names: [],
-    inputs: { title: app.title, form: app.form_data, requested_halalas: app.requested_halalas, criteria: p.criteria, budget, program: { id: p.id, name: p.name, cap_halalas: p.capHalalas, conditions: p.conditions }, association: { name: assoc.name, history }, attachments: [] },
+    // Attachment text is untrusted data, never instructions (docs/02-ai-layer.md §3).
+    inputs: { title: app.title, form, requested_halalas: app.requested_halalas, criteria: p.criteria, budget, program: { id: p.id, name: p.name, cap_halalas: p.capHalalas, conditions: p.conditions }, association: { name: assoc.name, history }, attachments: attachments.map((f) => ({ id: f.id, name: f.name, text: f.text_content })) },
   });
 }
 

@@ -11,3 +11,5 @@ playwright-report/
 test-results/
 /tmp/
 *.tsbuildinfo
+.storage/
+.storage-test/

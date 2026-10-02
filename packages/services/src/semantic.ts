@@ -53,7 +53,9 @@ export async function runIntent(ctx: Ctx, intent: Intent) {
     waqf = cfg.waqfCategories.find((c) => c.label === waqf || c.key === waqf)?.key;
     if (!waqf) return null;
   }
-  const row = await ctx.tx.one<{ v: number }>(m.sql, [periodStart(intent.period, ctx.now), waqf ?? null, (intent.filters.program_id as string) ?? null, (intent.filters.status as string) ?? null]);
+  const all = [periodStart(intent.period, ctx.now), waqf ?? null, (intent.filters.program_id as string) ?? null, (intent.filters.status as string) ?? null];
+  const used = Math.max(...[...m.sql.matchAll(/\$(\d+)/g)].map((x) => Number(x[1])));
+  const row = await ctx.tx.one<{ v: number }>(m.sql, all.slice(0, used));
   const qs = new URLSearchParams(Object.entries({ ...intent.filters, ...(intent.period ? { period: intent.period } : {}) }).map(([k, v]) => [k, String(v)])).toString();
   return {
     value: row.v, unit: m.unit, label: m.label,
