@@ -13,10 +13,10 @@
     "test": "turbo run test",
     "test:db": "node scripts/db.mjs test",
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:db",
-    "test:e2e": "pnpm --filter @wbl/web e2e",
+    "test:e2e": "pnpm --fail-if-no-match --filter @wbl/web e2e",
     "db:reset": "node scripts/db.mjs reset",
     "db:migration": "node scripts/db.mjs new",
-    "evals": "pnpm --filter @wbl/evals run evals",
+    "evals": "pnpm --fail-if-no-match --filter @wbl/evals run evals",
     "prototype": "pnpm --filter @wbl/prototype dev",
     "tokens": "pnpm --filter @wbl/tokens build",
     "seed:gen": "tsx scripts/gen-seed.ts"

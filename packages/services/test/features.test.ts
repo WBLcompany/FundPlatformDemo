@@ -266,3 +266,25 @@ describe("file scanning (T-24, architecture §8)", () => {
     expect((await worker.scanQuarantine(db, adapters, env)).scanned).toBe(0);
   });
 });
+
+describe("audit chain under concurrency (R-095)", () => {
+  it("stays intact in id order when a short write lands inside a longer transaction", async () => {
+    // The interleaving seen in e2e: T1 writes (takes the tenant's chain lock), T2 draws an id and
+    // waits for the lock, T1 writes again and commits, then T2 chains. Ids must still be chain order.
+    const org = await act("owner@namaa.demo", async (ctx) => ctx.actor.grants.find((g) => g.orgId)!.orgId!);
+    const pdf = (n: string) => ({ name: `${n}.pdf`, mime: "application/pdf", body: new TextEncoder().encode(n), ownerOrgId: org });
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    for (let round = 0; round < 3; round++) {
+      const t1 = act("owner@namaa.demo", async (ctx) => {
+        await orgService.storeFile(ctx, pdf(`long-a-${round}`));
+        await sleep(300);
+        await orgService.storeFile(ctx, pdf(`long-b-${round}`));
+      });
+      await sleep(100);
+      const t2 = act("owner@namaa.demo", (ctx) => orgService.storeFile(ctx, pdf(`short-${round}`)));
+      await Promise.all([t1, t2]);
+    }
+    const rows = await act("manager@almulhi.demo", (ctx) => ctx.tx.query<{ broken: string | null }>("select kernel.verify_audit_chain(app.tenant())::text as broken"));
+    expect(rows[0]!.broken).toBeNull();
+  });
+});
