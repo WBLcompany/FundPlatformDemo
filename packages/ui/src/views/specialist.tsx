@@ -1,4 +1,5 @@
 "use client";
+import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { Alert, EmptyState } from "../components/Alert";
 import { Eyebrow, RefNumber, StatusBadge } from "../components/Badge";
@@ -55,6 +56,9 @@ export type StudyActions = {
   requestInfoHref?: string;
   submitRecommendationHref?: string;
   onConflict?: () => void | Promise<void>;
+  /** Where the manual path lives when Manih is off or failed. Defaults to inline fields (prototype); the app points at its saving form. */
+  manualSummary?: ReactNode;
+  manualRecommendation?: ReactNode;
 };
 export function StudyFileView({ file, brief, actions = {}, initialEvidence = null }: { file: StudyFileVM; brief?: AiState<{ now: string; waiting: string; risk?: string }>; actions?: StudyActions; initialEvidence?: Evidence | null }) {
   const [evidence, setEvidence] = useState<Evidence | null>(initialEvidence);
@@ -102,7 +106,7 @@ export function StudyFileView({ file, brief, actions = {}, initialEvidence = nul
       <Card>
         <CardTitle>{v("study.summary")}</CardTitle>
         <AiSuggestion state={file.summary} render={(s) => <p className="max-w-[72ch] whitespace-pre-line">{s}</p>}
-          manual={<TextArea label={v("study.manualSummary")} />} onEvidence={setEvidence} onAccept={actions.onAcceptSummary ? () => actions.onAcceptSummary?.() : undefined} onFeedback={fb(outId(file.summary))} />
+          manual={actions.manualSummary ?? <TextArea label={v("study.manualSummary")} />} onEvidence={setEvidence} onAccept={actions.onAcceptSummary ? () => actions.onAcceptSummary?.() : undefined} onFeedback={fb(outId(file.summary))} />
       </Card>
 
       <Card>
@@ -110,7 +114,7 @@ export function StudyFileView({ file, brief, actions = {}, initialEvidence = nul
         {hidden && <div className="mb-3"><Alert tone="info">{v("study.independentNote")}</Alert></div>}
         {file.mode === "independent" && file.revealed && <div className="mb-3"><Alert tone="success">{v("study.revealed")}</Alert></div>}
         <AiScoreTable caption={v("study.criteria")} rows={scores} aiEnabled={file.aiEnabled} hiddenReason={hidden ? "independent" : null} onEvidence={setEvidence}
-          onHumanChange={(criterion, score) => { setScores((rows) => rows.map((r) => (r.criterion === criterion ? { ...r, human: score } : r))); actions.onHumanScore?.(criterion, score); }} />
+          onHumanChange={actions.onHumanScore ? (criterion, score) => { setScores((rows) => rows.map((r) => (r.criterion === criterion ? { ...r, human: score } : r))); actions.onHumanScore?.(criterion, score); } : undefined} />
         {hidden && actions.onRecordAndReveal && (
           <div className="mt-4 flex justify-end"><Button variant="primary" disabled={!allScored} onClick={() => void actions.onRecordAndReveal?.()}>{v("study.recordAndReveal")}</Button></div>
         )}
@@ -148,7 +152,7 @@ export function StudyFileView({ file, brief, actions = {}, initialEvidence = nul
         <CardTitle>{v("study.recommendation")}</CardTitle>
         {hidden ? <p className="text-body-sm text-text-muted">{t("ai.score.hidden")}</p> : (
           <AiSuggestion state={file.recommendation} onFeedback={fb(outId(file.recommendation))}
-            manual={<TextArea label={v("study.manualRecommendation")} />}
+            manual={actions.manualRecommendation ?? <TextArea label={v("study.manualRecommendation")} />}
             render={(r) => (
               <div className="flex flex-col gap-2">
                 <p className="text-body font-bold">{v(`study.decision.${r.decision}`)} — <span className="font-mono">{formatMoney(r.amountHalalas)}</span></p>
@@ -213,8 +217,9 @@ export function InfoRequestView({ appRef, missing, draft, onSend, sent }: {
 }
 
 /* S5 — submit recommendation (R-038) */
-export function SubmitRecommendationView({ appRef, suggested, nextChain, onSubmit, done }: {
+export function SubmitRecommendationView({ appRef, suggested, nextChain, onSubmit, done, children }: {
   appRef: string;
+  children?: ReactNode;
   suggested: { decision: string; amountHalalas: number } | null;
   nextChain: string[];
   onSubmit: (decision: string, amountHalalas: number) => void | Promise<void>;
@@ -236,6 +241,7 @@ export function SubmitRecommendationView({ appRef, suggested, nextChain, onSubmi
             {nextChain.map((c, i) => <li key={c} className="flex items-center gap-2">{i > 0 && <Icon name="arrowEnd" size={14} />}<span className="rounded-sm bg-neutral-100 px-2 py-1">{c}</span></li>)}
           </ol>
         </div>
+        {children}
         <Button variant="primary" onClick={() => void onSubmit(decision, Math.round(Number(amount) * 100))}>{v("submitRec.confirm")}</Button>
       </Card>
     </div>

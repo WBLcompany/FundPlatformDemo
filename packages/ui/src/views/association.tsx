@@ -5,6 +5,7 @@ import { Eyebrow, RefNumber, StatusBadge, type StatusTone } from "../components/
 import { Button } from "../components/Button";
 import { Card, CardTitle, PageHeader } from "../components/Card";
 import { TextArea, TextField } from "../components/Field";
+import { FileInput } from "../components/FileInput";
 import { Table } from "../components/Table";
 import { AiSuggestion, type AiState } from "../ai";
 import { Icon } from "../icons";
@@ -167,8 +168,9 @@ export function OtpView({ maskedPhone, onVerify, onResend, resendAfterSeconds = 
 
 /* J4 — association home: readiness, programmes, my applications (R-015, R-016) */
 const docTone: Record<DocumentVM["state"], StatusTone> = { valid: "done", near: "near", expired: "late", pending: "neutral" };
-export function AssociationHomeView({ associationName, readiness, programs, applications, documents, uploadHref }: {
+export function AssociationHomeView({ associationName, readiness, programs, applications, documents, uploadHref, todo = [] }: {
   associationName: string;
+  todo?: Array<{ id: string; key: string; params: Record<string, string>; href: string }>;
   readiness: ReadinessItem[];
   programs: Array<{ id: string; name: string; closesAt: string; href: string | null }>;
   applications: ApplicationRow[];
@@ -179,6 +181,19 @@ export function AssociationHomeView({ associationName, readiness, programs, appl
   return (
     <div className="mx-auto flex max-w-[1280px] flex-col gap-6 px-4 py-6 pb-24 md:pb-6">
       <PageHeader title={associationName} eyebrow={<Eyebrow>{v("assocHome.title")}</Eyebrow>} />
+      {todo.length > 0 && (
+        <Card>
+          <CardTitle>{v("assocHome.todo")}</CardTitle>
+          <ul className="flex flex-col divide-y divide-border">
+            {todo.map((x) => (
+              <li key={x.id} className="flex items-center justify-between gap-3 py-3">
+                <span className="text-body">{v(x.key, { ...x.params, date: x.params.date ? formatDate(x.params.date) : "" })}</span>
+                <a href={x.href} className="shrink-0 font-bold text-link underline-offset-4 hover:underline">{v("assocHome.todoOpen")}</a>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
       <Alert tone={ready ? "success" : "warning"} title={ready ? v("assocHome.ready") : v("assocHome.notReady")}>
         {!ready && (
           <ul className="mt-2 flex flex-col gap-2">
@@ -307,7 +322,7 @@ export function ApplicationFormView({ programName, fields, values, prefilled, st
           <Card className="flex flex-col gap-2 border-ai-accent">
             <p className="text-body font-bold">{v("apply.usePrepared")}</p>
             <p className="text-body-sm text-text-muted">{v("apply.usePreparedHint")}</p>
-            <input type="file" accept=".pdf,.docx" aria-label={v("apply.usePrepared")} onChange={(e) => { const f = e.target.files?.[0]; if (f) onUsePrepared(f); }} />
+            <FileInput label={v("apply.usePreparedFile")} accept=".pdf,.docx,.txt" onFiles={(fs) => onUsePrepared(fs[0]!)} />
             {prefill && prefill.status === "pending" && <p className="text-body-sm text-ai-text">{t("ai.pending")}</p>}
           </Card>
         )}

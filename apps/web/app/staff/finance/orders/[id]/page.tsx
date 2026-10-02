@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { Card, CardTitle, StatusBadge, TextArea } from "@wbl/ui";
+import { Card, CardTitle, RefNumber, PageHeader, StatusBadge, TextArea, formatMoney } from "@wbl/ui";
+import { EntityRef } from "@wbl/ui/entity";
 import { finance } from "@wbl/domain";
 import { approvalService, financeService } from "@wbl/services";
 import { resolveRef } from "@wbl/kernel";
@@ -32,7 +33,24 @@ export default async function Order({ params }: { params: Promise<{ id: string }
   if (!d) notFound();
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3"><StatusBadge tone={orderTone[d.o.status] ?? "neutral"}>{finance.ORDER_STATUS_LABEL[d.o.status]}</StatusBadge>{d.o.returned_reason && <span className="text-body-sm text-danger-text">{d.o.returned_reason}</span>}</div>
+      {/* Once ready, the order view carries its own heading; before that this page states what is being approved. */}
+      {d.o.status !== "ready" && d.o.status !== "executed"
+        ? <PageHeader title={t("order.title")} eyebrow={<RefNumber>{d.o.ref}</RefNumber>} actions={<StatusBadge tone={orderTone[d.o.status] ?? "neutral"}>{finance.ORDER_STATUS_LABEL[d.o.status]}</StatusBadge>} />
+        : <div><StatusBadge tone={orderTone[d.o.status] ?? "neutral"}>{finance.ORDER_STATUS_LABEL[d.o.status]}</StatusBadge></div>}
+      {d.o.returned_reason && <p className="text-body-sm text-danger-text">{d.o.returned_reason}</p>}
+      {/* What the approver is approving: always visible, whatever the state (R-081: payment data only). */}
+      {d.o.status !== "ready" && d.o.status !== "executed" && <Card>
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-body-sm sm:grid-cols-2">
+          <div><dt className="text-text-muted">{t("order.association")}</dt><dd><EntityRef entity={d.association} /></dd></div>
+          <div><dt className="text-text-muted">{t("order.project")}</dt><dd><EntityRef entity={d.project} /></dd></div>
+          <div><dt className="text-text-muted">{t("order.installment")}</dt><dd>{d.inst.label}</dd></div>
+          <div><dt className="text-text-muted">{t("order.amount")}</dt><dd className="font-mono">{formatMoney(d.o.amount_halalas)}</dd></div>
+          <div><dt className="text-text-muted">{t("order.account")}</dt><dd>{d.bank ? <>{d.bank.bank_name} <span dir="ltr" className="font-mono">•••• {d.bank.iban_last4}</span></> : "—"}</dd></div>
+          {d.ap && <div><dt className="text-text-muted">{t("order.chain")}</dt><dd><ol className="flex flex-wrap gap-2">{d.ap.chain.applicable.map((l, i) => (
+            <li key={l.key}><StatusBadge tone={i < d.ap!.chain.current ? "done" : i === d.ap!.chain.current ? "active" : "neutral"}>{l.label}</StatusBadge></li>))}</ol></dd></div>}
+          {d.blockers.length > 0 && <div className="sm:col-span-2"><dt className="text-text-muted">{t("order.blockers")}</dt><dd className="text-danger-text">{d.blockers.map((b) => b.label).join("، ")}</dd></div>}
+        </dl>
+      </Card>}
       {d.awaiting && d.ap && <Card><CardTitle>{t("staff.awaitingYou")}</CardTitle><form action={async () => { "use server"; await approveOrderAction(id, d.ap!.id); }}><SubmitButton>{t("staff.approve")}</SubmitButton></form></Card>}
       {d.o.status === "blocked" && <form action={async () => { "use server"; await recheckAction(id); }}><SubmitButton variant="secondary">{t("staff.recheck")}</SubmitButton></form>}
       {d.o.status === "returned" && !d.isFinance && (

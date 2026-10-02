@@ -2,12 +2,12 @@
 // Connects as `authenticator` and switches to restricted roles per operation; it
 // never holds a service-role key (invariant 3).
 import { createAdapters } from "@wbl/adapters";
-import { Database } from "@wbl/kernel";
+import { Database, secretFromEnv } from "@wbl/kernel";
 import { worker } from "@wbl/services";
 
 const db = new Database(process.env.DATABASE_URL ?? "postgres://authenticator:authenticator@localhost:54329/grants_dev");
 const adapters = createAdapters(process.env);
-const env = { appUrl: process.env.APP_URL ?? "http://localhost:3000", manihWebhookSecret: process.env.MANIH_WEBHOOK_SECRET ?? "dev-manih-secret", otpSalt: process.env.OTP_SALT ?? "dev-otp-salt" };
+const env = { appUrl: process.env.APP_URL ?? "http://localhost:3000", manihWebhookSecret: secretFromEnv("MANIH_WEBHOOK_SECRET", "dev-manih-secret"), otpSalt: secretFromEnv("OTP_SALT", "dev-otp-salt") };
 const OUTBOX_MS = Number(process.env.OUTBOX_INTERVAL_MS ?? 1000);
 const SWEEP_MS = Number(process.env.SWEEP_INTERVAL_MS ?? 60_000);
 

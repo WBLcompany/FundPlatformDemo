@@ -1,6 +1,7 @@
 import { OFFICIAL_EVENTS, render, TEMPLATES, type EventType } from "@wbl/kernel";
 import type { Ctx } from "./context";
 import { submitPending } from "./ai";
+import { tryClose } from "./project";
 
 /**
  * Outbox consumers (architecture §7). Each receives one event in a session
@@ -10,7 +11,7 @@ import { submitPending } from "./ai";
  */
 export type OutboxEvent = { id: number; event_type: EventType; entity_kind: string | null; entity_id: string | null; actor: string | null; payload: Record<string, unknown>; created_at: string };
 
-export const CONSUMERS = ["activity", "notifications", "manih_submit", "usage"] as const;
+export const CONSUMERS = ["activity", "notifications", "manih_submit", "usage", "project_closure"] as const;
 export type ConsumerName = (typeof CONSUMERS)[number];
 
 const ACTIVITY: Partial<Record<EventType, string>> = {
@@ -40,6 +41,14 @@ export async function consume(ctx: Ctx, consumer: ConsumerName, e: OutboxEvent) 
       // R-084: consumption from day one — submitted applications and completed (closed) grants.
       if (e.event_type === "application.submitted") await ctx.tx.query("insert into platform.usage_events (tenant_id, kind, ref_id) values (app.tenant(), 'application.submitted', $1) on conflict do nothing", [e.entity_id]);
       if (e.event_type === "project.closed") await ctx.tx.query("insert into platform.usage_events (tenant_id, kind, ref_id) values (app.tenant(), 'application.completed', $1) on conflict do nothing", [e.entity_id]);
+      return;
+    case "project_closure":
+      // R-073: the project module reacts to finance's event (invariant 12) — the last executed
+      // payment of a project in «closing» closes it; tryClose re-checks every condition itself.
+      if (e.event_type === "disbursement.executed" && e.payload.project_id) {
+        const p = await ctx.tx.maybe<{ status: string }>("select status from project.projects where id = $1", [e.payload.project_id]);
+        if (p?.status === "closing") await tryClose(ctx, String(e.payload.project_id));
+      }
       return;
   }
 }

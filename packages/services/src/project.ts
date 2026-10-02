@@ -261,7 +261,6 @@ export async function decideFinalReport(ctx: Ctx, projectId: string, input: { ac
   const pr = await ctx.tx.one<{ association_id: string; approved_halalas: number; status: project.ProjectStatus; version: number; specialist_membership_id: string | null }>(
     "select association_id, approved_halalas, status, version, specialist_membership_id from project.projects where id = $1", [projectId]);
   authorize(ctx, "final_report.decide", { assigneeMembershipId: pr.specialist_membership_id });
-  const fr = await ctx.tx.one<{ spent_halalas: number; unspent_disposition: string | null; unspent_halalas: number | null }>("select spent_halalas, unspent_disposition, unspent_halalas from project.final_reports where project_id = $1", [projectId]);
   if (!input.accept) {
     if (!input.note.trim()) throw new DomainError("note_required");
     await ctx.tx.query("update project.final_reports set status = 'returned', decided_by = auth.uid(), decided_at = now(), version = version + 1 where project_id = $1", [projectId]);
@@ -278,14 +277,20 @@ export async function decideFinalReport(ctx: Ctx, projectId: string, input: { ac
   return tryClose(ctx, projectId);
 }
 
-/** R-073: closes when every installment is paid or cancelled and any unspent amount has a disposition. */
-export async function tryClose(ctx: Ctx, projectId: string) {
+/** R-073: what still stands between a project and closure (read-only; the project page shows it). */
+export async function closureBlockers(ctx: Ctx, projectId: string) {
   const pr = await ctx.tx.one<{ approved_halalas: number; status: project.ProjectStatus; version: number; association_id: string }>("select approved_halalas, status, version, association_id from project.projects where id = $1", [projectId]);
   const fr = await ctx.tx.maybe<{ spent_halalas: number; unspent_disposition: string | null; status: string }>("select spent_halalas, unspent_disposition, status from project.final_reports where project_id = $1", [projectId]);
   const disbursed = (await ctx.tx.one<{ s: number }>("select coalesce(sum(amount_halalas),0)::bigint as s from finance.disbursement_orders where project_id = $1 and status = 'executed'", [projectId])).s;
   const openInst = (await ctx.tx.one<{ n: number }>("select count(*)::int as n from finance.installments where project_id = $1 and status not in ('paid','cancelled')", [projectId])).n;
   const blockers = fr?.status !== "accepted" ? ["التقرير الختامي لم يُقبل"] : finance.closureCheck(pr.approved_halalas, disbursed, fr.spent_halalas, fr.unspent_disposition);
   if (openInst > 0) blockers.push(`${openInst} دفعات لم تُحسم`);
+  return { pr, blockers };
+}
+
+/** R-073: closes when every installment is paid or cancelled and any unspent amount has a disposition. */
+export async function tryClose(ctx: Ctx, projectId: string) {
+  const { pr, blockers } = await closureBlockers(ctx, projectId);
   if (blockers.length || pr.status !== "closing") return { closed: false, blockers };
   await ctx.tx.query("update project.projects set status = 'closed', closed_at = now(), version = version + 1 where id = $1 and version = $2", [projectId, pr.version]);
   await ctx.tx.emit({ type: "project.closed", entityKind: "project", entityId: projectId, payload: { org_id: pr.association_id } });

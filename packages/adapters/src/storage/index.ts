@@ -16,7 +16,7 @@ export class LocalStorage implements ObjectStorage {
     if (!p.startsWith(path.resolve(this.root) + path.sep)) throw new Error("path escapes storage root");
     return p;
   }
-  async put(key: string, body: Uint8Array) {
+  async put(key: string, body: Uint8Array, _mime?: string) {
     const p = this.resolve(key);
     await mkdir(path.dirname(p), { recursive: true });
     await writeFile(p, body);

@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { Card, CardTitle, PageHeader, StatusBadge } from "@wbl/ui";
-import { AiSuggestion } from "@wbl/ui/ai";
 import { ai, approvalService } from "@wbl/services";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
 import { asUser } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { aiState } from "@/lib/vm/ai";
 import { amendmentApprovalAction, forwardAction } from "./actions";
+import { DiffClient, type AmendmentDiff } from "./DiffClient";
 
 export const dynamic = "force-dynamic";
 
@@ -23,16 +23,14 @@ export default async function Amendment({ params }: { params: Promise<{ id: stri
     return { am, out, aiOn: donor.ai_enabled, inst, awaiting };
   });
   if (!d) notFound();
-  const diff = aiState(d.out, d.aiOn, (o) => o as { changes: string[]; impact: string; policy_violations: string[] });
+  const diff = aiState(d.out, d.aiOn, (o) => o as AmendmentDiff);
   return (
     <div className="flex max-w-3xl flex-col gap-4">
-      <PageHeader title={t("staff.amendment")} actions={<StatusBadge tone="active">{d.am.status}</StatusBadge>} />
+      <PageHeader title={t("staff.amendment")} actions={<StatusBadge tone={d.am.status === "approved" ? "done" : d.am.status === "rejected" || d.am.status === "expired" ? "rejected" : "active"}>{t(`staff.amendmentStatus.${d.am.status}`)}</StatusBadge>} />
       <Card><CardTitle>{t("staff.justification")}</CardTitle><p className="text-body">{d.am.justification}</p></Card>
       <Card>
         <CardTitle>{t("staff.aiDiff")}</CardTitle>
-        <AiSuggestion state={diff} manual={<ul className="list-disc ps-5 text-body-sm">{JSON.stringify(d.am.changes)}</ul>} render={(v) => (
-          <div className="flex flex-col gap-2 text-body-sm"><ul className="list-disc ps-5">{v.changes.map((c) => <li key={c}>{c}</li>)}</ul><p>{v.impact}</p>{v.policy_violations.length > 0 && <p className="text-danger-text">{v.policy_violations.join("، ")}</p>}</div>
-        )} />
+        <DiffClient diff={diff} changes={d.am.changes} labels={{ amount: t("staff.newAmountShort"), deliverables: t("portal.deliverables") }} />
       </Card>
       {d.am.status === "submitted" && <form action={async () => { "use server"; await forwardAction(id); }}><SubmitButton>{t("staff.forward")}</SubmitButton></form>}
       {d.inst && d.awaiting && (

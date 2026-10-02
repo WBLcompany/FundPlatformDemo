@@ -5,6 +5,7 @@ import { RefNumber, StatusBadge, type StatusTone } from "../components/Badge";
 import { Button } from "../components/Button";
 import { Card, CardTitle, PageHeader, Stat } from "../components/Card";
 import { SelectField, TextArea } from "../components/Field";
+import { FileInput } from "../components/FileInput";
 import { Table } from "../components/Table";
 import { AiBadge, AiSuggestion, EvidenceDrawer, type AiState, type Evidence } from "../ai";
 import { EntityRef, type EntityRefData } from "../entity/EntityRef";
@@ -41,7 +42,7 @@ export function ManagerHomeView({ waiting, pipeline, team, period, reassignHref 
         <Card>
           <CardTitle>{v("manager.team")}</CardTitle>
           <Table caption={v("manager.team")} rows={team} rowKey={(r) => r.id} columns={[
-            { key: "p", header: "", cell: (r) => <span className="flex items-center gap-2"><EntityRef entity={r.person} />{r.absent && <StatusBadge tone="neutral">{v("manager.absent")}</StatusBadge>}</span> },
+            { key: "p", header: v("manager.member"), cell: (r) => <span className="flex items-center gap-2"><EntityRef entity={r.person} />{r.absent && <StatusBadge tone="neutral">{v("manager.absent")}</StatusBadge>}</span> },
             { key: "o", header: v("manager.open"), mono: true, cell: (r) => r.open },
             { key: "l", header: v("manager.late"), mono: true, cell: (r) => <span className={r.late ? "font-bold text-danger-text" : ""}>{r.late}</span> },
           ]} />
@@ -63,9 +64,9 @@ export function AppTable({ rows, caption }: { rows: ApplicationRow[]; caption: s
   return (
     <Table caption={caption} rows={rows} rowKey={(r) => r.id} columns={[
       { key: "ref", header: "#", mono: true, cell: (r) => (r.href ? <a className="text-link hover:underline" href={r.href}>{r.ref}</a> : r.ref) },
-      { key: "t", header: v("study.item"), cell: (r) => r.title },
-      { key: "a", header: v("assoc.applications"), cell: (r) => <EntityRef entity={r.association} /> },
-      { key: "s", header: v("track.stages"), cell: (r) => <StatusBadge tone={r.stageTone}>{r.stage}</StatusBadge> },
+      { key: "t", header: v("appTable.title"), cell: (r) => r.title },
+      { key: "a", header: v("appTable.association"), cell: (r) => <EntityRef entity={r.association} /> },
+      { key: "s", header: v("appTable.stage"), cell: (r) => <StatusBadge tone={r.stageTone}>{r.stage}</StatusBadge> },
       { key: "d", header: v("tasks.due"), cell: (r) => (r.dueAt ? <StatusBadge tone={r.dueTone ?? "neutral"}>{r.dueAt}</StatusBadge> : "—") },
       { key: "m", header: v("study.amount"), mono: true, cell: (r) => formatMoney(r.requestedHalalas, false) },
     ]} />
@@ -147,16 +148,14 @@ export function CommitteeMinutesView({ extraction, onUpload, onConfirm, done }: 
     <div className="flex flex-col gap-4">
       <PageHeader title={v("committee.minutesTitle")} />
       <Card>
-        <label className="flex flex-col gap-2 text-caption font-medium">{v("committee.minutesFile")}
-          <input type="file" accept=".pdf,.docx" onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); }} />
-        </label>
+        <FileInput label={v("committee.minutesFile")} accept=".pdf,.docx" onFiles={(fs) => onUpload(fs[0]!)} />
       </Card>
       {extraction && extraction.status !== "ready" && extraction.status !== "edited" && <AiSuggestion state={extraction} manual={null} render={() => null} />}
       {current.length > 0 && (
         <Card>
           <CardTitle action={<AiBadge />}>{v("committee.confirmTitle")}</CardTitle>
           <Table caption={v("committee.confirmTitle")} rows={current} rowKey={(r) => r.applicationId} columns={[
-            { key: "c", header: "", cell: (r) => <input type="checkbox" aria-label={r.ref} checked={checked.includes(r.applicationId)} onChange={(e) => setChecked(e.target.checked ? [...checked, r.applicationId] : checked.filter((x) => x !== r.applicationId))} /> },
+            { key: "c", header: v("committee.select"), cell: (r) => <input type="checkbox" aria-label={r.ref} checked={checked.includes(r.applicationId)} onChange={(e) => setChecked(e.target.checked ? [...checked, r.applicationId] : checked.filter((x) => x !== r.applicationId))} /> },
             { key: "r", header: "#", mono: true, cell: (r) => r.ref },
             { key: "t", header: v("study.item"), cell: (r) => r.title },
             { key: "d", header: v("committee.extracted"), cell: (r) => (
@@ -180,9 +179,9 @@ export function FinanceHomeView({ awaiting, returned, upcoming }: { awaiting: Or
   const table = (rows: OrderRow[], caption: string) => (
     <Table caption={caption} rows={rows} rowKey={(r) => r.id} columns={[
       { key: "r", header: "#", mono: true, cell: (r) => (r.href ? <a className="text-link hover:underline" href={r.href}>{r.ref}</a> : r.ref) },
-      { key: "a", header: v("assoc.applications"), cell: (r) => <EntityRef entity={r.association} /> },
+      { key: "a", header: v("appTable.association"), cell: (r) => <EntityRef entity={r.association} /> },
       { key: "m", header: v("study.amount"), mono: true, cell: (r) => formatMoney(r.amountHalalas, false) },
-      { key: "s", header: "", cell: (r) => <span className="flex flex-col gap-1"><StatusBadge tone={r.tone}>{r.state}</StatusBadge>{r.reason && <span className="text-caption text-text-muted">{r.reason}</span>}</span> },
+      { key: "s", header: v("appTable.state"), cell: (r) => <span className="flex flex-col gap-1"><StatusBadge tone={r.tone}>{r.state}</StatusBadge>{r.reason && <span className="text-caption text-text-muted">{r.reason}</span>}</span> },
       { key: "d", header: v("tasks.due"), cell: (r) => r.dueLabel ?? "—" },
     ]} />
   );
@@ -214,7 +213,7 @@ export function DisbursementOrderView({ order, onExecute, onReturn, outcome }: {
       <PageHeader title={v("finance.order")} eyebrow={<RefNumber>{order.ref}</RefNumber>} />
       <Card>
         <dl className="grid grid-cols-2 gap-3 text-body">
-          <dt className="text-text-muted">{v("assoc.applications")}</dt><dd><EntityRef entity={order.association} /></dd>
+          <dt className="text-text-muted">{v("appTable.association")}</dt><dd><EntityRef entity={order.association} /></dd>
           <dt className="text-text-muted">{v("project.installments")}</dt><dd>{order.installment} — <EntityRef entity={order.project} /></dd>
           <dt className="text-text-muted">{v("study.amount")}</dt><dd className="font-mono text-h2">{formatMoney(order.amountHalalas)}</dd>
           <dt className="text-text-muted">{v("finance.account")}</dt><dd><span>{order.account.bank}</span> <span dir="ltr" className="font-mono">{order.account.ibanMasked}</span></dd>
@@ -228,7 +227,7 @@ export function DisbursementOrderView({ order, onExecute, onReturn, outcome }: {
       </Card>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1 text-caption font-medium">{v("finance.proof")}<input type="file" onChange={(e) => setProof(e.target.files?.[0]?.name ?? "")} /></label>
+          <FileInput label={v("finance.proof")} onFiles={(fs) => setProof(fs[0]?.name ?? "")} />
           <label className="flex flex-col gap-1 text-caption font-medium">{v("finance.financeRef")}<input dir="ltr" className="rounded-sm border border-border px-3 py-2 font-mono text-body" value={ref} onChange={(e) => setRef(e.target.value)} /></label>
           <Button variant="primary" disabled={blocked || !proof} onClick={() => void onExecute(proof, ref)}>{v("finance.execute")}</Button>
         </Card>

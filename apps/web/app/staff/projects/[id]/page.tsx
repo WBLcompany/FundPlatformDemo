@@ -27,7 +27,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     const activity = await queries.activity(ctx, "project", id);
     const donor = await ctx.tx.one<{ ai_enabled: boolean }>("select ai_enabled from platform.donors where id = app.tenant()");
     const brief = await ai.runSyncTask(ctx, { task: "entity.brief", subjectKind: "project", subjectId: id, inputs: { now: `${PROJECT_LABEL[p.status]} · ${inst.filter((i) => i.status === "paid").length} من ${inst.length} دفعات صُرفت`, waiting: dels.find((x) => x.status === "pending") ? `التسليم التالي «${dels.find((x) => x.status === "pending")!.label}» في ${dels.find((x) => x.status === "pending")!.due_date}` : "لا تسليمات معلقة" } });
-    const closable = p.status === "closing" ? await projectService.tryClose(ctx, id) : null;
+    const closable = p.status === "closing" ? { blockers: (await projectService.closureBlockers(ctx, id)).blockers } : null;
     return { p, app, assoc, inst, dels, agreements, fr, activity, donor, brief, closable };
   });
   if (!d) notFound();
@@ -56,7 +56,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         </ActionForm>
       </Card>
     )}
-    {d.closable && !d.closable.closed && <p className="mx-auto w-full max-w-[1280px] text-body-sm text-warning-text">{t("staff.closeBlocked")}: {d.closable.blockers.join("، ")}</p>}
+    {d.closable && d.closable.blockers.length > 0 && <p className="mx-auto w-full max-w-[1280px] text-body-sm text-warning-text">{t("staff.closeBlocked")}: {d.closable.blockers.join("، ")}</p>}
     <form action={async () => { "use server"; await closeAction(id); }} className="mx-auto w-full max-w-[1280px]">{p.status === "closing" && <SubmitButton variant="secondary">{t("staff.closeProject")}</SubmitButton>}</form>
     </div>
   );

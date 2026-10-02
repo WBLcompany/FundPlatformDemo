@@ -117,7 +117,27 @@
     "export": "صدّر CSV",
     "resolveReturn": "سجّل التصحيح وأعده للمالية",
     "fixNote": "ما الذي صُحّح؟",
-    "recheck": "أعد فحص الموانع"
+    "recheck": "أعد فحص الموانع",
+    "recRationale": "مبررات التوصية",
+    "manualSummary": "اكتب ملخصك في «احفظ الحكم» أسفل الصفحة",
+    "manualRecommendation": "ارفع توصيتك من «ارفع التوصية»",
+    "met": "متحقق",
+    "notMet": "غير متحقق",
+    "rating": "تقييم أداء الجمعية",
+    "finalStatus": {
+      "submitted": "بانتظار المراجعة",
+      "accepted": "مقبول",
+      "returned": "أُعيد للاستكمال"
+    },
+    "newAmountShort": "المبلغ الجديد",
+    "amendmentStatus": {
+      "submitted": "مقدّم",
+      "in_approval": "في الاعتماد",
+      "awaiting_signatory": "بانتظار موافقة الجمعية",
+      "approved": "معتمد",
+      "rejected": "مرفوض",
+      "expired": "منتهي المهلة"
+    }
   },
   "reports": {
     "title": "التقارير",
@@ -176,7 +196,8 @@
     "policyClauses": "بنود السياسة (بند في كل سطر)",
     "savePolicy": "احفظ البنود",
     "approvePolicy": "اعتمد السياسة",
-    "draftPolicy": "اطلب مسودة من مانح"
+    "draftPolicy": "اطلب مسودة من مانح",
+    "policyFiles": "ملفات السياسة"
   },
   "portal": {
     "newApplication": "قدّم على البرنامج",
@@ -214,7 +235,13 @@
     "declineAmendment": "لا أوافق",
     "invitations": "الدعوات",
     "acceptInvite": "اقبل الدعوة",
-    "declineInvite": "اعتذر"
+    "declineInvite": "اعتذر",
+    "attachments": "المرفقات ({n})",
+    "due": "الموعد",
+    "state": "الحالة",
+    "installment": "الدفعة",
+    "finalSubmitted": "أُرسل التقرير الختامي. يصلك الإشعار بعد مراجعته.",
+    "finalAccepted": "قُبل التقرير الختامي وأُقفل المشروع."
   },
   "operator": {
     "login": "دخول المشغّل",
@@ -227,5 +254,15 @@
     "openList": "افتح القائمة",
     "notUnderstood": "لم أفهم السؤال. جرّب صياغة أخرى أو ابحث بالاسم أو الرقم.",
     "riyal": "ريال"
+  },
+  "order": {
+    "title": "أمر صرف",
+    "association": "الجمعية",
+    "project": "المشروع",
+    "installment": "الدفعة",
+    "amount": "المبلغ",
+    "account": "الحساب البنكي",
+    "chain": "مسار الاعتماد",
+    "blockers": "ما يمنع الصرف"
   }
 }

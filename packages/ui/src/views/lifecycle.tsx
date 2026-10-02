@@ -5,6 +5,7 @@ import { RefNumber, StatusBadge, type StatusTone } from "../components/Badge";
 import { Button } from "../components/Button";
 import { Card, CardTitle, PageHeader } from "../components/Card";
 import { TextArea, TextField } from "../components/Field";
+import { FileInput } from "../components/FileInput";
 import { Table } from "../components/Table";
 import { AiBadge, AiSuggestion, EvidenceDrawer, type AiState, type Evidence } from "../ai";
 import { EntityPage } from "../entity/EntityPage";
@@ -23,7 +24,8 @@ export function AgreementView({ agreementRef, title, issuedAt, previewHref, asso
   associationSigned: string | null; donorSigned: string | null;
   canUploadSigned: boolean; canDonorSign: boolean;
   onUploadSigned: (file: File) => void | Promise<void>;
-  onDonorSign: () => void | Promise<void>;
+  /** Staff only. The association's page passes nothing, so the donor's button never shows there. */
+  onDonorSign?: () => void | Promise<void>;
 }) {
   return (
     <div className="flex max-w-3xl flex-col gap-4">
@@ -38,13 +40,13 @@ export function AgreementView({ agreementRef, title, issuedAt, previewHref, asso
           {associationSigned ? <StatusBadge tone="done">{associationSigned}</StatusBadge> : <StatusBadge tone="neutral">{v("agreement.pending")}</StatusBadge>}
         </div>
         {!associationSigned && canUploadSigned && (
-          <label className="flex flex-col gap-1 text-caption font-medium">{v("agreement.uploadSigned")}<input type="file" accept=".pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f) void onUploadSigned(f); }} /></label>
+          <FileInput label={v("agreement.uploadSigned")} accept=".pdf" onFiles={(fs) => void onUploadSigned(fs[0]!)} />
         )}
         <div className="flex items-center justify-between gap-3">
           <span>{v("agreement.donorSigned")}</span>
           {donorSigned ? <StatusBadge tone="done">{donorSigned}</StatusBadge> : <StatusBadge tone="neutral">{v("agreement.pending")}</StatusBadge>}
         </div>
-        {!donorSigned && <Button variant="primary" disabled={!associationSigned || !canDonorSign} onClick={() => void onDonorSign()}>{v("agreement.donorSign")}</Button>}
+        {!donorSigned && onDonorSign && <Button variant="primary" disabled={!associationSigned || !canDonorSign} onClick={() => void onDonorSign()}>{v("agreement.donorSign")}</Button>}
         {associationSigned && donorSigned && <Alert tone="success">{v("agreement.signedBoth")}</Alert>}
       </Card>
     </div>
@@ -67,7 +69,7 @@ export function ProjectView({ title, reference, status, brief, facts, installmen
         <Table caption={v("project.installments")} rows={installments} rowKey={(r) => r.id} columns={[
           { key: "l", header: v("study.milestone"), cell: (r) => r.label },
           { key: "a", header: v("study.amount"), mono: true, cell: (r) => formatMoney(r.amountHalalas, false) },
-          { key: "s", header: "", cell: (r) => <StatusBadge tone={r.tone}>{r.state}</StatusBadge> },
+          { key: "s", header: v("appTable.state"), cell: (r) => <StatusBadge tone={r.tone}>{r.state}</StatusBadge> },
         ]} />
       </Card>
       <Card>
@@ -75,7 +77,7 @@ export function ProjectView({ title, reference, status, brief, facts, installmen
         <Table caption={v("project.deliverables")} rows={deliverables} rowKey={(r) => r.id} columns={[
           { key: "l", header: v("study.deliverable"), cell: (r) => (r.href ? <a className="text-link hover:underline" href={r.href}>{r.label}</a> : r.label) },
           { key: "d", header: v("study.dueOn"), cell: (r) => r.dueLabel },
-          { key: "s", header: "", cell: (r) => <StatusBadge tone={r.tone}>{r.state}</StatusBadge> },
+          { key: "s", header: v("appTable.state"), cell: (r) => <StatusBadge tone={r.tone}>{r.state}</StatusBadge> },
         ]} />
       </Card>
       <Card>
@@ -94,12 +96,12 @@ export function DeliverableUploadView({ label, dueLabel, onSubmit, done }: { lab
   const [ben, setBen] = useState("");
   const [spent, setSpent] = useState("");
   const [note, setNote] = useState("");
-  if (done) return <Alert tone="success" title={t("views.apply.submitted", { ref: label })} />;
+  if (done) return <Alert tone="success" title={v("project.submitted", { label })} />;
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4 px-4 py-6 pb-24 md:pb-6">
       <PageHeader title={v("project.uploadDeliverable")} description={`${label} · ${dueLabel}`} />
       <Card className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-caption font-medium">{v("project.deliverableFiles")}<input type="file" multiple onChange={(e) => setFiles(Array.from(e.target.files ?? []).map((f) => f.name))} /></label>
+        <FileInput label={v("project.deliverableFiles")} multiple onFiles={(fs) => setFiles(fs.map((f) => f.name))} />
         <TextField label={v("project.beneficiaries")} type="number" dir="ltr" required value={ben} onChange={(e) => setBen(e.target.value)} />
         <TextField label={v("project.spent")} type="number" dir="ltr" required value={spent} onChange={(e) => setSpent(e.target.value)} />
         <TextArea label={v("infoRequest.message")} value={note} onChange={(e) => setNote(e.target.value)} />
@@ -238,7 +240,7 @@ export function PolicyBuilderView({ draft, onUpload, onApprove, approved }: { dr
     <div className="flex max-w-3xl flex-col gap-4">
       <PageHeader title={v("setup.policyTitle")} />
       <Card className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1 text-caption font-medium">{v("setup.uploadPolicy")}<input type="file" multiple accept=".pdf,.docx" onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); }} /></label>
+        <FileInput label={v("setup.uploadPolicy")} accept=".pdf,.docx" onFiles={(fs) => onUpload(fs[0]!)} />
         <p className="text-body-sm text-text-muted">{v("setup.orAnswer")}</p>
       </Card>
       {draft && (
@@ -301,8 +303,8 @@ export function OperatorHealthView({ donors, incidents }: { donors: Array<{ id: 
           { key: "n", header: t("views.register.name"), cell: (r) => r.name },
           { key: "p", header: v("operator.plan"), cell: (r) => r.plan },
           { key: "c", header: v("operator.completed"), mono: true, cell: (r) => r.completed },
-          { key: "s", header: "", cell: (r) => <StatusBadge tone={r.tone}>{r.status}</StatusBadge> },
-          { key: "g", header: "", cell: (r) => (r.supportUntil ? <span className="text-caption">{v("operator.supportGrant", { date: r.supportUntil })}</span> : "—") },
+          { key: "s", header: v("appTable.state"), cell: (r) => <StatusBadge tone={r.tone}>{r.status}</StatusBadge> },
+          { key: "g", header: v("operator.support"), cell: (r) => (r.supportUntil ? <span className="text-caption">{v("operator.supportGrant", { date: r.supportUntil })}</span> : "—") },
         ]} />
       </Card>
       <Card>

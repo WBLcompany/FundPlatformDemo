@@ -11,7 +11,7 @@ const refusalTable = z.object({
   id: z.string().min(1),
   name: z.string(),
   hitPolicy: z.literal("COLLECT"),
-  rules: z.array(z.object({ id: z.string().min(1), when: z.array(condition), then: z.object({ refuse: z.literal(true) }), reason: z.string().min(1) })),
+  rules: z.array(z.object({ id: z.string().min(1), when: z.array(condition), then: z.object({ refuse: z.literal(true) }), reason: z.string().min(1), label: z.string().min(1).optional() })),
 });
 
 /** The application form is JSON Schema (a validated subset) with x-step / x-widget hints (architecture §1). */

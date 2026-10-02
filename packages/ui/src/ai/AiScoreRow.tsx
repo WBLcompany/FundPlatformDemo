@@ -45,18 +45,23 @@ export function AiScoreRow({ row, hiddenReason, aiEnabled = true, onHumanChange,
         </td>
       )}
       <td className="px-3 py-3">
-        <label htmlFor={inputId} className="sr-only">{t("ai.score.human")} — {row.criterion}</label>
-        <input
-          id={inputId}
-          type="number"
-          inputMode="numeric"
-          min={0}
-          max={row.max}
-          value={row.human ?? ""}
-          onChange={(e) => onHumanChange?.(Number(e.target.value))}
-          readOnly={!onHumanChange}
-          className="w-20 rounded-sm border border-border px-2 py-1 font-mono focus:outline-2 focus:outline-focus"
-        />
+        {onHumanChange ? (
+          <>
+            <label htmlFor={inputId} className="sr-only">{t("ai.score.human")} — {row.criterion}</label>
+            <input
+              id={inputId}
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={row.max}
+              value={row.human ?? ""}
+              onChange={(e) => onHumanChange(Number(e.target.value))}
+              className="w-20 rounded-sm border border-border px-2 py-1 font-mono focus:outline-2 focus:outline-focus"
+            />
+          </>
+        ) : (
+          <span className="font-mono text-body">{row.human == null ? "—" : `${row.human}/${row.max}`}</span>
+        )}
       </td>
       {aiEnabled && (
         <td className="px-3 py-3 font-mono text-body-sm">

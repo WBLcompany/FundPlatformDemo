@@ -37,10 +37,10 @@ export function defaultProgram(overrides: Partial<ProgramConfig> = {}): ProgramC
     eligibility: {
       id: "eligibility", name: "الأهلية", hitPolicy: "COLLECT",
       rules: [
-        { id: "readiness", when: [{ field: "association.ready", op: "eq", value: false }], then: { refuse: true }, reason: "الجمعية غير جاهزة للتقديم" },
-        { id: "cap", when: [{ field: "application.requestedHalalas", op: "gt", valueFrom: "program.capHalalas" }], then: { refuse: true }, reason: "المبلغ يتجاوز سقف البرنامج" },
-        { id: "duplicate", when: [{ field: "association.openApplicationsInProgram", op: "gte", value: 1 }], then: { refuse: true }, reason: "لدى الجمعية طلب مفتوح في هذا البرنامج" },
-        { id: "window", when: [{ field: "program.isOpen", op: "eq", value: false }], then: { refuse: true }, reason: "التقديم على البرنامج مغلق" },
+        { id: "readiness", when: [{ field: "association.ready", op: "eq", value: false }], then: { refuse: true }, reason: "الجمعية غير جاهزة للتقديم", label: "جاهزية الجمعية" },
+        { id: "cap", when: [{ field: "application.requestedHalalas", op: "gt", valueFrom: "program.capHalalas" }], then: { refuse: true }, reason: "المبلغ يتجاوز سقف البرنامج", label: "سقف البرنامج" },
+        { id: "duplicate", when: [{ field: "association.openApplicationsInProgram", op: "gte", value: 1 }], then: { refuse: true }, reason: "لدى الجمعية طلب مفتوح في هذا البرنامج", label: "لا طلب مفتوح آخر في البرنامج" },
+        { id: "window", when: [{ field: "program.isOpen", op: "eq", value: false }], then: { refuse: true }, reason: "التقديم على البرنامج مغلق", label: "نافذة التقديم مفتوحة" },
       ],
     },
     conditions: ["جمعية مسجلة بترخيص ساري", "وثائق الجمعية الجوهرية سارية", "المبلغ ضمن سقف البرنامج"],

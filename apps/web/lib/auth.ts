@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { jwtVerify, SignJWT } from "jose";
 import { cache } from "react";
 import { iam } from "@wbl/domain";
+import { secretFromEnv } from "@wbl/kernel";
 import { loadActor, type Ctx, withPerson } from "@wbl/services";
 import { currentPortal } from "./tenant";
 import { env, runtime } from "./server";
@@ -18,7 +19,7 @@ import { env, runtime } from "./server";
 const COOKIE = "wbl_session";
 const PENDING = "wbl_mfa";
 const IDLE_SECONDS = Number(process.env.SESSION_IDLE_SECONDS ?? 60 * 60 * 8);
-const secret = () => new TextEncoder().encode(process.env.SESSION_SECRET ?? "dev-session-secret-change-me-32-bytes!!");
+const secret = () => new TextEncoder().encode(secretFromEnv("SESSION_SECRET", "dev-session-secret-change-me-32-bytes!!"));
 
 export type Session = { sub: string; tenant: string; staff: boolean };
 

@@ -3,6 +3,7 @@ export { createT, t as uiT, uiMessages, type Messages } from "./i18n";
 export { Icon, iconNames, type IconName } from "./icons";
 export { Button, type ButtonVariant } from "./components/Button";
 export { TextField, TextArea, SelectField, FieldShell } from "./components/Field";
+export { FileInput } from "./components/FileInput";
 export { StatusBadge, Eyebrow, RefNumber, type StatusTone } from "./components/Badge";
 export { Card, CardTitle, PageHeader, Stat } from "./components/Card";
 export { Table, type Column } from "./components/Table";

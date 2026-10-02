@@ -15,7 +15,8 @@ export type Adapters = { manih: ManihClient; otp: OtpSender; entities: EntitiesR
  * ("لا ترسل بيانات حقيقية لأي خدمة خارجية من بيئة التطوير").
  */
 export function createAdapters(env: Record<string, string | undefined>): Adapters {
-  const secret = env.MANIH_WEBHOOK_SECRET ?? "dev-manih-secret";
+  const secret = env.MANIH_WEBHOOK_SECRET ?? (env.NODE_ENV === "production" ? "" : "dev-manih-secret");
+  if (!secret) throw new Error("MANIH_WEBHOOK_SECRET is required in production");
   return {
     manih: env.MANIH_URL && env.MANIH_API_KEY ? new HttpManihClient(env.MANIH_URL, env.MANIH_API_KEY) : new MockManihClient({ secret, mode: (env.MANIH_MOCK_MODE as "ok" | "fail" | "invalid") ?? "ok" }),
     otp: env.AUTHENTICA_API_KEY ? new AuthenticaOtpSender(env.AUTHENTICA_API_KEY) : new MockOtpSender(),

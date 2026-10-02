@@ -121,9 +121,10 @@ async function onCompleted(ctx: Ctx, inst: Instance, note: string | null) {
 
 /** «بانتظار اعتمادك» for the actor (R-079): only instances whose current level waits for them. */
 export async function awaitingMe(ctx: Ctx) {
-  const rows = await ctx.tx.query<Instance & { ref: string | null; title: string | null }>(
-    `select i.id, i.subject_kind, i.subject_id, i.chain, i.current_level, i.status, i.version, i.amount_halalas, i.framework_version_id, a.ref, a.title
+  const rows = await ctx.tx.query<Instance & { ref: string | null; title: string | null; association_id: string | null; association_name: string | null }>(
+    `select i.id, i.subject_kind, i.subject_id, i.chain, i.current_level, i.status, i.version, i.amount_halalas, i.framework_version_id, a.ref, a.title, a.association_id, o.name as association_name
        from approval.instances i left join cycle.applications a on a.tenant_id = i.tenant_id and a.id = i.subject_id
+       left join org.associations o on o.tenant_id = a.tenant_id and o.id = a.association_id
       where i.status = 'open' order by i.opened_at`);
   const out = [];
   for (const r of rows) if (await awaitsActor(ctx, r)) out.push(r);

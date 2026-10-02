@@ -21,6 +21,16 @@ export async function portalHome(ctx: Ctx) {
   const invitations = await ctx.tx.query<{ id: string; program_id: string; deadline: string; status: string }>("select id, program_id, deadline, status from cycle.invitations where association_id = $1 and status = 'sent'", [org]);
   const amendments = await ctx.tx.query<{ id: string; project_id: string; justification: string }>(
     "select a.id, a.project_id, a.justification from project.amendments a join project.projects p on p.tenant_id = a.tenant_id and p.id = a.project_id where p.association_id = $1 and a.status = 'awaiting_signatory'", [org]);
+  // «ينتظر إجراءك»: everything the association has to act on, each with the page that does it.
+  const agreementsToSign = await ctx.tx.query<{ id: string; ref: string | null }>(
+    "select g.id, a.ref from project.agreements g join cycle.applications a on a.tenant_id = g.tenant_id and a.id = g.application_id where a.association_id = $1 and g.status = 'issued'", [org]);
+  const deliverablesDue = await ctx.tx.query<{ id: string; label: string; due_date: string; status: string }>(
+    "select d.id, d.label, d.due_date::text, d.status from project.deliverables d join project.projects p on p.tenant_id = d.tenant_id and p.id = d.project_id where p.association_id = $1 and d.status in ('pending','returned') and p.status = 'active' order by d.due_date limit 5", [org]);
+  const todo: Array<{ id: string; key: string; params: Record<string, string>; href: string }> = [
+    ...apps.filter((a) => a.status === "awaiting_info").map((a) => ({ id: `info-${a.id}`, key: "todo.info", params: { ref: a.ref ?? "" }, href: `/portal/applications/${a.id}` })),
+    ...agreementsToSign.map((g) => ({ id: `agr-${g.id}`, key: "todo.sign", params: { ref: g.ref ?? "" }, href: `/portal/agreements/${g.id}` })),
+    ...deliverablesDue.map((d) => ({ id: `del-${d.id}`, key: d.status === "returned" ? "todo.deliverableReturned" : "todo.deliverable", params: { label: d.label, date: d.due_date }, href: `/portal/deliverables/${d.id}` })),
+  ];
   const now = new Date();
   const programs = cfg.programs.filter((p) => (p.access === "public" || invitations.some((i) => i.program_id === p.id)) && cycle.programIsOpen(p, now));
   const labels = Object.fromEntries(cfg.documentTypes.map((d) => [d.key, d.label]));
@@ -30,7 +40,7 @@ export async function portalHome(ctx: Ctx) {
     programs: programs.map((p) => ({ id: p.id, name: p.name, closesAt: p.window.closesAt, href: `/portal/applications/new?program=${p.id}` })),
     applications: apps.map((a): ApplicationRow => ({ id: a.id, ref: a.ref ?? "مسودة", title: a.title || "—", association: { kind: "association", id: org, label: assoc.name }, program: cfg.programs.find((p) => p.id === a.program_id)?.name ?? "", stage: cycle.ASSOCIATION_STAGE[a.status].label, stageTone: appTone[a.status] ?? "neutral", requestedHalalas: a.requested_halalas ?? 0, href: a.status === "draft" ? `/portal/applications/${a.id}/edit` : `/portal/applications/${a.id}` })),
     documents: docs.map((d): DocumentVM => ({ id: d.id, type: labels[d.doc_type] ?? d.doc_type, number: d.number ?? undefined, expiresAt: d.expiry_date, state: d.state, fileName: d.file_name ?? "" })),
-    invitations, amendments,
+    invitations, amendments, todo,
   };
 }
 export type { framework };

@@ -35,6 +35,14 @@ function pool(url: string): pg.Pool {
   let p = pools.get(url);
   if (!p) {
     p = new pg.Pool({ connectionString: url, max: Number(process.env.DB_POOL_MAX ?? 10) });
+    // An idle client dropped by the server (restart, failover) emits 'error' on the pool; without a
+    // listener Node treats it as unhandled and kills the process. The pool discards the client and
+    // the next query opens a fresh one.
+    p.on("error", (e) => console.error(JSON.stringify({ level: "warn", event: "db_idle_client_error", code: (e as { code?: string }).code })));
+    // The same for a client that is checked out but between queries (inside a transaction while
+    // awaiting an adapter): its error is emitted on the client itself. The pending query, if any,
+    // still rejects, so the transaction fails and rolls back as it should.
+    p.on("connect", (client) => { client.on("error", (e) => console.error(JSON.stringify({ level: "warn", event: "db_client_error", code: (e as { code?: string }).code }))); });
     pools.set(url, p);
   }
   return p;

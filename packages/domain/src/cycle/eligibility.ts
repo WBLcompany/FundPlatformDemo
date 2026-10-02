@@ -1,5 +1,5 @@
 import { refusals, type DecisionTable, type Verdict } from "@wbl/rules";
-import type { ProgramConfig } from "../framework/schema";
+import type { ProgramConfig } from "../framework";
 
 /** Facts the eligibility table reads. Built by the server from the database, never from the client. */
 export type EligibilityFacts = {

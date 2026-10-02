@@ -1,5 +1,5 @@
 import { holds } from "@wbl/rules";
-import type { ChainConfig } from "../framework/schema";
+import type { ChainConfig } from "../framework";
 import { DomainError } from "../shared";
 
 /**

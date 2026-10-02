@@ -41,7 +41,7 @@ export async function loadStudy(ctx: Ctx, id: string) {
     aiEnabled: donor.ai_enabled,
     checks: pv ? [
       { key: "complete", label: "الاكتمال", passed: pv.completeness.done === pv.completeness.total, detail: `${pv.completeness.done} من ${pv.completeness.total} حقول مطلوبة` },
-      ...p.eligibility.rules.map((r) => { const hit = pv.eligibility.reasons.find((x) => x.ruleId === r.id); return { key: r.id, label: r.id === "cap" ? "السقف" : r.id === "duplicate" ? "التكرار" : r.id === "readiness" ? "الجاهزية" : r.id === "window" ? "فترة التقديم" : "الأهلية", passed: !hit, detail: hit ? hit.reason : "اجتاز", rule: r.reason }; }),
+      ...p.eligibility.rules.map((r) => { const hit = pv.eligibility.reasons.find((x) => x.ruleId === r.id); return { key: r.id, label: r.label ?? r.reason, passed: !hit, detail: hit ? hit.reason : "اجتاز", rule: r.reason }; }),
     ] : [],
     summary: aiState(out, donor.ai_enabled, (o) => (o as typeof open)?.summary?.text, evidenceOf(open?.summary?.evidence, files)),
     scores: p.criteria.map((c) => {
@@ -56,5 +56,7 @@ export async function loadStudy(ctx: Ctx, id: string) {
     attachments: [...files.entries()].map(([fid, name]) => ({ id: fid, name, href: `/api/files/${fid}` })),
     judgement: { decision: sf?.recommendation ? ({ approve: "موافقة", approve_modified: "موافقة بمبلغ معدّل", reject: "رفض" } as Record<string, string>)[sf.recommendation] ?? null : null, amountHalalas: sf?.recommended_halalas ?? null, byName: sf?.judged_by_name ?? null },
   };
-  return { app, vm, program: p, inst, awaiting, agreement, project: projectRow, isAssignee, sf, criteria: p.criteria as framework.Criterion[], level: inst ? approvalDomain.currentLevel(inst.chain) : null, chainLabels: inst ? inst.chain.applicable.map((l) => l.label) : [], activity: await queries.activity(ctx, "application", id) };
+  // Manih's draft, offered as the editable starting point of the specialist's own judgement (never saved by itself).
+  const aiDraft = donor.ai_enabled && out?.status === "ready" ? { summary: open?.summary?.text ?? "", schedule: (open?.schedule ?? []).map((s, i, all) => ({ ...s, condition: i === 0 ? "signature" : i === all.length - 1 ? "final_report" : "deliverable" })) } : null;
+  return { aiDraft, app, vm, program: p, inst, awaiting, agreement, project: projectRow, isAssignee, sf, criteria: p.criteria as framework.Criterion[], level: inst ? approvalDomain.currentLevel(inst.chain) : null, chainLabels: inst ? inst.chain.applicable.map((l) => l.label) : [], activity: await queries.activity(ctx, "application", id) };
 }

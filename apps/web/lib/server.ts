@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdapters, type Adapters } from "@wbl/adapters";
-import { Database } from "@wbl/kernel";
+import { Database, secretFromEnv } from "@wbl/kernel";
 import type { Env } from "@wbl/services";
 
 /**
@@ -18,8 +18,9 @@ export function runtime() {
   }
   return g.__wbl;
 }
+// Read when used, not at import: `next build` loads this module with no secrets present.
 export const env: Env = {
-  appUrl: process.env.APP_URL ?? "http://localhost:3000",
-  manihWebhookSecret: process.env.MANIH_WEBHOOK_SECRET ?? "dev-manih-secret",
-  otpSalt: process.env.OTP_SALT ?? "dev-otp-salt",
+  get appUrl() { return process.env.APP_URL ?? "http://localhost:3000"; },
+  get manihWebhookSecret() { return secretFromEnv("MANIH_WEBHOOK_SECRET", "dev-manih-secret"); },
+  get otpSalt() { return secretFromEnv("OTP_SALT", "dev-otp-salt"); },
 };

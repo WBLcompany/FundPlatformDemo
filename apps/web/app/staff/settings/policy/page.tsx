@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { Card, CardTitle, PageHeader, StatusBadge, TextArea } from "@wbl/ui";
+import { Card, CardTitle, FileInput, PageHeader, StatusBadge, TextArea } from "@wbl/ui";
 import { ai, frameworkService, orgService } from "@wbl/services";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
 import { asUser } from "@/lib/auth";
@@ -48,7 +48,7 @@ export default async function Policy() {
       <PageHeader title={t("settings.policy")} actions={d.p && <StatusBadge tone={d.p.status === "approved" ? "done" : "active"}>{d.p.status}</StatusBadge>} />
       <Card>
         <CardTitle>{t("settings.draftPolicy")}</CardTitle>
-        <ActionForm action={upload}><input type="file" name="files" multiple aria-label={t("settings.draftPolicy")} /><SubmitButton variant="secondary">{t("settings.draftPolicy")}</SubmitButton></ActionForm>
+        <ActionForm action={upload}><FileInput label={t("settings.policyFiles")} name="files" multiple accept=".pdf,.docx,.txt" /><SubmitButton variant="secondary">{t("settings.draftPolicy")}</SubmitButton></ActionForm>
         {d.out?.status === "pending" && <p className="mt-2 text-body-sm text-ai-text">…</p>}
       </Card>
       <Card>

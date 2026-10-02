@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { approval } from "@wbl/domain";
 import { ai, cycleService, programOf, versionConfig } from "@wbl/services";
 import { asUser } from "@/lib/auth";
+import { t } from "@/lib/i18n";
 import { RecommendClient } from "./RecommendClient";
 
 export const dynamic = "force-dynamic";
@@ -21,5 +22,5 @@ export default async function Recommend({ params }: { params: Promise<{ id: stri
     return { ref: app.ref ?? "", suggested: rec ? { decision: rec.decision, amountHalalas: rec.amount_halalas } : { decision: "approve", amountHalalas: app.requested_halalas ?? 0 }, chain: approval.applicableLevels(chain, { amountHalalas: amount }).map((l) => l.label) };
   });
   if (!d) notFound();
-  return <RecommendClient id={id} appRef={d.ref} suggested={d.suggested} chain={d.chain} />;
+  return <RecommendClient id={id} appRef={d.ref} suggested={d.suggested} chain={d.chain} labels={{ rationale: t("staff.recRationale") }} />;
 }

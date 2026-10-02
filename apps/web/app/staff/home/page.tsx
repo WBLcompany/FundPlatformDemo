@@ -14,11 +14,12 @@ export default async function Home() {
     const exec = iam.rolesOf(ctx.actor).includes("executive");
     const home = exec ? await queries.executiveHome(ctx) : { ...(await queries.managerHome(ctx)), order: ["decide", "money", "team"] as Array<"decide" | "money" | "team"> };
     const team = home.team.map((m) => ({ id: m.membership_id, person: resolveRef(ctx.actor, { kind: "person", id: m.person_id, label: m.name }), open: m.open, late: m.late, absent: m.absent }));
-    return { exec, home, team };
+    const awaiting = home.awaiting.map((i) => ({ ...i, association: i.association_id ? resolveRef(ctx.actor, { kind: "association", id: i.association_id, label: i.association_name ?? "", orgId: i.association_id }) : { kind: "association" as const, id: "", label: "—" } }));
+    return { exec, home, team, awaiting };
   });
   const pipelineLabels = ["submitted", "in_review", "awaiting_info", "in_approval", "approved", "rejected"];
   const pipeline = pipelineLabels.map((s) => ({ key: s, label: statusLabel(s), count: d.home.pipeline.find((p) => p.status === s)?.n ?? 0, href: `/staff/applications?status=${s}` }));
-  const waiting = d.home.awaiting.filter((i) => i.subject_kind === "application").map((i) => ({ id: i.subject_id, ref: i.ref ?? "", title: i.title ?? "", association: { kind: "association", id: "", label: "—" }, program: "", stage: statusLabel("in_approval"), stageTone: appTone.in_approval!, requestedHalalas: i.amount_halalas, href: `/staff/applications/${i.subject_id}` }));
+  const waiting = d.awaiting.filter((i) => i.subject_kind === "application").map((i) => ({ id: i.subject_id, ref: i.ref ?? "", title: i.title ?? "", association: i.association, program: "", stage: statusLabel("in_approval"), stageTone: appTone.in_approval!, requestedHalalas: i.amount_halalas, href: `/staff/applications/${i.subject_id}` }));
   if (d.exec) {
     return <OrderClient initial={d.home.order}>{(order, setOrder) => (
       <ExecutiveHomeView order={order} onReorder={setOrder} decide={waiting}

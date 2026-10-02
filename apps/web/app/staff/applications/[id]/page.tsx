@@ -23,17 +23,17 @@ export default async function StudyPage({ params }: { params: Promise<{ id: stri
     return loadStudy(ctx, id);
   });
   if (!data) notFound();
-  const { vm, app, inst, awaiting, agreement, project, isAssignee, sf, level, chainLabels, activity } = data;
+  const { aiDraft, vm, app, inst, awaiting, agreement, project, isAssignee, sf, level, chainLabels, activity } = data;
   const canStudy = isAssignee && app.status === "in_review";
-  const scheduleText = (sf?.schedule ?? []).map((s) => [s.label, s.percent, s.condition, s.deliverable, s.due_offset_days].join(" | ")).join("\n");
+  const scheduleText = (sf?.schedule?.length ? sf.schedule : aiDraft?.schedule ?? []).map((s) => [s.label, s.percent, s.condition, s.deliverable, s.due_offset_days].join(" | ")).join("\n");
   return (
     <div className="flex flex-col gap-6">
-      <StudyClient id={id} file={vm} canStudy={canStudy} requestInfoHref={canStudy ? `/staff/applications/${id}/request-info` : undefined} recommendHref={canStudy ? `/staff/applications/${id}/recommend` : undefined} />
+      <StudyClient id={id} file={vm} canStudy={canStudy} requestInfoHref={canStudy ? `/staff/applications/${id}/request-info` : undefined} recommendHref={canStudy ? `/staff/applications/${id}/recommend` : undefined} manual={{ summary: t("staff.manualSummary"), recommendation: t("staff.manualRecommendation") }} />
       {canStudy && (
-        <Card>
+        <Card id="judgement">
           <CardTitle>{t("staff.saveJudgement")}</CardTitle>
           <ActionForm action={judgementAction.bind(null, id)}>
-            <TextArea label={t("staff.summary")} name="summary" defaultValue={sf?.summary ?? ""} />
+            <TextArea label={t("staff.summary")} name="summary" defaultValue={sf?.summary || aiDraft?.summary || ""} />
             <TextArea label={t("staff.schedule")} name="schedule" hint={t("staff.scheduleHint")} defaultValue={scheduleText} className="font-mono" dir="ltr" />
             <div className="flex flex-wrap gap-2"><SubmitButton variant="secondary">{t("staff.saveJudgement")}</SubmitButton></div>
           </ActionForm>

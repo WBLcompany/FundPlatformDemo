@@ -32,12 +32,13 @@ export function Stat({ label, value, href }: { label: string; value: ReactNode; 
   const inner = (
     <>
       <span className="text-caption text-text-muted">{label}</span>
-      <span className="font-mono text-h1 font-regular text-text">{value}</span>
+      {/* Long figures (budgets in the millions) step down a size instead of overflowing a narrow tile. */}
+      <span className={cn("min-w-0 font-mono font-regular text-text [overflow-wrap:anywhere]", typeof value === "string" && value.length > 9 ? "text-h3" : typeof value === "string" && value.length > 7 ? "text-h2" : "text-h1")}>{value}</span>
     </>
   );
   return href ? (
-    <a href={href} className="flex flex-col gap-1 rounded-md border border-border bg-surface p-4 hover:border-dark-green focus-visible:outline-2 focus-visible:outline-focus">{inner}</a>
+    <a href={href} className="flex min-w-0 flex-col gap-1 rounded-md border border-border bg-surface p-4 hover:border-dark-green focus-visible:outline-2 focus-visible:outline-focus">{inner}</a>
   ) : (
-    <div className="flex flex-col gap-1 rounded-md border border-border bg-surface p-4">{inner}</div>
+    <div className="flex min-w-0 flex-col gap-1 rounded-md border border-border bg-surface p-4">{inner}</div>
   );
 }

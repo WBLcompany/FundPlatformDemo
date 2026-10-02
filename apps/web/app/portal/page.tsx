@@ -26,7 +26,7 @@ export default async function PortalHome() {
           ))}
         </div>
       )}
-      <AssociationHomeView associationName={d.name} readiness={d.readiness} programs={d.programs} applications={d.applications} documents={d.documents} uploadHref="/portal/documents" />
+      <AssociationHomeView associationName={d.name} readiness={d.readiness} programs={d.programs} applications={d.applications} documents={d.documents} uploadHref="/portal/documents" todo={d.todo} />
     </>
   );
 }

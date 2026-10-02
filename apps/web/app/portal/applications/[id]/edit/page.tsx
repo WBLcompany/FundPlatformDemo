@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { t } from "@/lib/i18n";
 import { cycleService } from "@wbl/services";
 import type { FormFieldVM } from "@wbl/ui/views";
 import { asUser } from "@/lib/auth";
@@ -21,5 +22,5 @@ export default async function Edit({ params }: { params: Promise<{ id: string }>
   const form = d.pv.program.form;
   const fields: FormFieldVM[] = Object.entries(form.properties).map(([key, p]) => ({ key, label: p.title, kind: p["x-widget"] === "textarea" ? "textarea" : p.type === "string" ? "text" : "number", required: form.required.includes(key), step: p["x-step"], hint: p.description }));
   const values = Object.fromEntries(Object.entries(d.app.form_data).filter(([k]) => !k.startsWith("__")).map(([k, v]) => [k, String(v ?? "")]));
-  return <EditClient id={id} programName={d.pv.program.name} steps={form["x-steps"]} fields={fields} initialValues={values} aiOn={d.aiOn} resubmit={d.app.status === "awaiting_info"} attachments={((d.app.form_data.__attachments as string[]) ?? [])} />;
+  return <EditClient labels={{ attachments: t("portal.attachments") }} id={id} programName={d.pv.program.name} steps={form["x-steps"]} fields={fields} initialValues={values} aiOn={d.aiOn} resubmit={d.app.status === "awaiting_info"} attachments={((d.app.form_data.__attachments as string[]) ?? [])} />;
 }

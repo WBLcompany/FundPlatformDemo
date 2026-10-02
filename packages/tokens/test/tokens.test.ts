@@ -21,7 +21,7 @@ describe("design tokens", () => {
   });
 
   // Pairs the design system documents as text-on-background (docs/04-design-system.md §2.4).
-  const t = tokens as Record<string, string>;
+  const t = tokens as unknown as Record<string, string>;
   const pairs: Array<[string, string, string]> = [
     ["text on bg", "color.semantic.text", "color.semantic.bg"],
     ["text on surface", "color.semantic.text", "color.semantic.surface"],

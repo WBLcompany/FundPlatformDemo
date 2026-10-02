@@ -12,7 +12,7 @@ export async function previewAction(id: string) {
     return {
       checks: [
         ...pv.readiness.items.filter((i) => !i.ok).map((i) => ({ key: i.key, label: i.label, passed: false, detail: `${i.label}: ${i.reason ?? ""}` })),
-        ...pv.program.eligibility.rules.map((r) => { const hit = pv.eligibility.reasons.find((x) => x.ruleId === r.id); return { key: r.id, label: r.id, passed: !hit, detail: hit ? hit.reason : "مستوفى" }; }),
+        ...pv.program.eligibility.rules.map((r) => { const hit = pv.eligibility.reasons.find((x) => x.ruleId === r.id); return { key: r.id, label: r.label ?? r.reason, passed: !hit, detail: hit ? hit.reason : (r.label ?? r.reason) }; }),
       ],
       completeness: pv.completeness,
     };

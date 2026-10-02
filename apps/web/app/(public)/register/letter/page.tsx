@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { PageHeader, TextField } from "@wbl/ui";
+import { FileInput, PageHeader, TextField } from "@wbl/ui";
 import { orgService } from "@wbl/services";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
 import { asAnon } from "@/lib/auth";
@@ -30,7 +30,7 @@ export default function LetterPage() {
       <PageHeader title={uiT("views.register.letterTitle")} description={uiT("views.register.letterIntro")} />
       <ActionForm action={letterAction}>
         <TextField label={uiT("views.register.license")} name="license" dir="ltr" required />
-        <label className="flex flex-col gap-1 text-caption font-medium">{uiT("views.register.letterFile")}<input type="file" name="letter" accept=".pdf,.png,.jpg" required /></label>
+        <FileInput label={uiT("views.register.letterFile")} name="letter" accept=".pdf,.png,.jpg" required />
         <TextField label={t("auth.fullName")} name="fullName" required />
         <TextField label={t("auth.email")} name="email" type="email" dir="ltr" required />
         <TextField label={t("auth.phone")} name="phone" dir="ltr" required />

@@ -1,12 +1,12 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Card } from "@wbl/ui";
+import { Alert, Card, FileInput } from "@wbl/ui";
 import type { AiState } from "@wbl/ui/ai";
 import { ApplicationFormView, type CheckResult, type FormFieldVM } from "@wbl/ui/views";
 import { attachAction, prefillAction, prefillResultAction, previewAction, saveFormAction, submitAction } from "./actions";
 
-export function EditClient({ id, programName, steps, fields, initialValues, aiOn, resubmit, attachments: initialAtt }: { id: string; programName: string; steps: string[]; fields: FormFieldVM[]; initialValues: Record<string, string>; aiOn: boolean; resubmit: boolean; attachments: string[] }) {
+export function EditClient({ labels, id, programName, steps, fields, initialValues, aiOn, resubmit, attachments: initialAtt }: { labels: { attachments: string }; id: string; programName: string; steps: string[]; fields: FormFieldVM[]; initialValues: Record<string, string>; aiOn: boolean; resubmit: boolean; attachments: string[] }) {
   const router = useRouter();
   const [values, setValues] = useState(initialValues);
   const [prefilled, setPrefilled] = useState<string[]>([]);
@@ -63,14 +63,12 @@ export function EditClient({ id, programName, steps, fields, initialValues, aiOn
           const r = await submitAction(id);
           if (r.ok && r.data) setSubmitted(r.data.ref); else if (!r.ok) setErr(r.error);
         }} />
-      <div className="mx-auto w-full max-w-[1280px] px-4 pb-24 md:pb-6">
+      {!submitted && <div className="mx-auto w-full max-w-[1280px] px-4 pb-24 md:pb-6">
         <Card className="flex flex-col gap-2">
-          <label className="flex flex-col gap-1 text-caption font-medium">المرفقات ({atts})
-            <input type="file" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; const fd = new FormData(); fd.set("file", f); const r = await attachAction(id, fd); if (r.ok) setAtts((n) => n + 1); else setErr(r.error); }} />
-          </label>
+          <FileInput label={labels.attachments.replace("{n}", String(atts))} onFiles={async (fs) => { const fd = new FormData(); fd.set("file", fs[0]!); const r = await attachAction(id, fd); if (r.ok) setAtts((n) => n + 1); else setErr(r.error); }} />
         </Card>
         {err && <div className="mt-3"><Alert tone="danger">{err}</Alert></div>}
-      </div>
+      </div>}
     </div>
   );
 }

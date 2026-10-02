@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { Card, CardTitle, PageHeader, SelectField, TextArea, StatusBadge, formatMoney } from "@wbl/ui";
-import { AiSuggestion } from "@wbl/ui/ai";
 import { ai } from "@wbl/services";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
 import { asUser } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { aiState } from "@/lib/vm/ai";
 import { decideFinalAction, unspentAction } from "../actions";
+import { ReviewClient, type FinalReview } from "./ReviewClient";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +22,10 @@ export default async function FinalReport({ params }: { params: Promise<{ id: st
     return { fr, out, aiOn: donor.ai_enabled };
   }, { readOnly: true });
   if (!d) notFound();
-  const review = aiState(d.out, d.aiOn, (o) => o as { notes: string[]; budget_vs_spent: { note: string }; planned_vs_achieved: Array<{ item: string; planned: string; achieved: string; met: boolean }> });
+  const review = aiState(d.out, d.aiOn, (o) => o as FinalReview);
   return (
     <div className="flex max-w-4xl flex-col gap-4">
-      <PageHeader title={t("staff.finalReport")} actions={<StatusBadge tone={d.fr.status === "accepted" ? "done" : "active"}>{d.fr.status}</StatusBadge>} />
+      <PageHeader title={t("staff.finalReport")} actions={<StatusBadge tone={d.fr.status === "accepted" ? "done" : d.fr.status === "returned" ? "late" : "active"}>{t(`staff.finalStatus.${d.fr.status}`)}</StatusBadge>} />
       <Card>
         <p className="whitespace-pre-line text-body">{d.fr.narrative}</p>
         <dl className="mt-4 grid grid-cols-2 gap-3 text-body-sm md:grid-cols-4">
@@ -36,16 +36,14 @@ export default async function FinalReport({ params }: { params: Promise<{ id: st
         </dl>
       </Card>
       <Card>
-        <AiSuggestion state={review} manual={null} render={(r) => (
-          <ul className="flex flex-col gap-2 text-body-sm">{r.planned_vs_achieved.map((x) => <li key={x.item}>{x.item}: {x.planned} ← {x.achieved} {x.met ? "✓" : "✗"}</li>)}<li>{r.budget_vs_spent.note}</li></ul>
-        )} />
+        <ReviewClient review={review} labels={{ met: t("staff.met"), notMet: t("staff.notMet") }} />
       </Card>
       {d.fr.status === "submitted" && (
         <Card>
           <CardTitle>{t("staff.decide")}</CardTitle>
           <ActionForm action={decideFinalAction.bind(null, id)}>
             <SelectField label={t("staff.decide")} name="decision" options={[{ value: "accept", label: t("staff.accept") }, { value: "return", label: t("staff.return") }]} />
-            <SelectField label="تقييم الأداء" name="rating" options={["أ", "ب", "ج", "د"].map((x) => ({ value: x, label: x }))} />
+            <SelectField label={t("staff.rating")} name="rating" options={["أ", "ب", "ج", "د"].map((x) => ({ value: x, label: x }))} />
             <TextArea label={t("staff.note")} name="note" />
             <SubmitButton>{t("staff.decide")}</SubmitButton>
           </ActionForm>

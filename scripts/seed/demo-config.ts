@@ -33,7 +33,7 @@ export function noorahDemoConfig(): framework.FrameworkConfig {
     waqfCategory: "economic",
     budgetAccount: "grants-1448",
   });
-  program.eligibility.rules.push({ id: "overdue", when: [{ field: "association.overdueObligations", op: "gt", value: 0 }], then: { refuse: true }, reason: "على الجمعية التزامات متأخرة مع المؤسسة" });
+  program.eligibility.rules.push({ id: "overdue", when: [{ field: "association.overdueObligations", op: "gt", value: 0 }], then: { refuse: true }, reason: "على الجمعية التزامات متأخرة مع المؤسسة", label: "لا التزامات متأخرة" });
   program.form.properties.budgetLines = { type: "string", title: "بنود الموازنة (بند: مبلغ في كل سطر)", maxLength: 4000, "x-step": 3, "x-widget": "textarea" };
   program.form.properties.indicators = { type: "string", title: "المؤشرات القابلة للقياس", maxLength: 3000, "x-step": 2, "x-widget": "textarea" };
 

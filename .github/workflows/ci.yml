@@ -26,8 +26,12 @@ jobs:
       - run: pnpm verify
       - name: Build web
         run: pnpm --filter @wbl/web build
+      - name: Playwright browser
+        run: pnpm --filter @wbl/web exec playwright install --with-deps chromium
       - name: Playwright — full cycle, AI mock and AI disabled
         run: pnpm test:e2e
-        env: { PLAYWRIGHT_CHROMIUM: "" }
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: apps/web/playwright-report, retention-days: 7 }
       - name: Manih evals
         run: pnpm evals

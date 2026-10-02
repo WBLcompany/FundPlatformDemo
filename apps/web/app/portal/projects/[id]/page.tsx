@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { Card, CardTitle, PageHeader, SelectField, StatusBadge, Table, TextArea, TextField, formatMoney } from "@wbl/ui";
+import { Alert, Card, CardTitle, FileInput, PageHeader, SelectField, StatusBadge, Table, TextArea, TextField, formatMoney } from "@wbl/ui";
 import { financeService, orgService, projectService } from "@wbl/services";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
 import { asUser } from "@/lib/auth";
@@ -44,7 +44,7 @@ export default async function MyProject({ params }: { params: Promise<{ id: stri
     "use server";
     const r = await run(() => asUser((ctx) => projectService.submitFinalReport(ctx, id, {
       narrative: String(fd.get("narrative") ?? ""), beneficiaries: Number(fd.get("beneficiaries") ?? 0), femaleBeneficiaries: fd.get("female") ? Number(fd.get("female")) : null,
-      outputs: {}, spentHalalas: Math.round(Number(fd.get("spent") ?? 0) * 100), unspentDisposition: (String(fd.get("unspent") ?? "") || null) as "returned" | null, fileIds: [] })), t("app.saved"));
+      outputs: {}, spentHalalas: Math.round(Number(fd.get("spent") ?? 0) * 100), unspentDisposition: (String(fd.get("unspent") ?? "") || null) as "returned" | null, fileIds: [] })), t("portal.finalSubmitted"));
     revalidatePath(`/portal/projects/${id}`);
     return r;
   }
@@ -56,24 +56,34 @@ export default async function MyProject({ params }: { params: Promise<{ id: stri
         <CardTitle>{t("portal.deliverables")}</CardTitle>
         <Table caption={t("portal.deliverables")} rows={d.dels} rowKey={(r) => r.id} columns={[
           { key: "l", header: t("portal.deliverables"), cell: (r) => (["pending", "returned"].includes(r.status) ? <a className="text-link hover:underline" href={`/portal/deliverables/${r.id}`}>{r.label}</a> : r.label) },
-          { key: "d", header: "", cell: (r) => fmtDate(r.due_date) },
-          { key: "s", header: "", cell: (r) => <StatusBadge tone={delTone[r.status] ?? "neutral"}>{DEL_LABEL[r.status]}</StatusBadge> },
+          { key: "d", header: t("portal.due"), cell: (r) => fmtDate(r.due_date) },
+          { key: "s", header: t("portal.state"), cell: (r) => <StatusBadge tone={delTone[r.status] ?? "neutral"}>{DEL_LABEL[r.status]}</StatusBadge> },
         ]} />
       </Card>
       <Card>
         <CardTitle>{t("nav.finance")}</CardTitle>
         <Table caption={t("nav.finance")} rows={d.inst} rowKey={(r) => r.id} columns={[
-          { key: "l", header: "", cell: (r) => r.label },
+          { key: "l", header: t("portal.installment"), cell: (r) => r.label },
           { key: "a", header: t("staff.amount"), mono: true, cell: (r) => formatMoney(r.amount_halalas, false) },
-          { key: "s", header: "", cell: (r) => <StatusBadge tone={instTone[r.status] ?? "neutral"}>{INST_LABEL[r.status]}</StatusBadge> },
+          { key: "s", header: t("portal.state"), cell: (r) => <StatusBadge tone={instTone[r.status] ?? "neutral"}>{INST_LABEL[r.status]}</StatusBadge> },
         ]} />
+        {d.orders.some((o) => o.receipt_received_at) && (
+          <ul className="mt-3 flex flex-col gap-2">
+            {d.orders.filter((o) => o.receipt_received_at).map((o) => (
+              <li key={o.id} className="flex flex-wrap items-center gap-2 text-body-sm"><span className="font-mono">{o.ref}</span><StatusBadge tone="done">{t("portal.receiptDone")}</StatusBadge><span className="text-text-muted">{fmtDate(o.receipt_received_at)}</span></li>
+            ))}
+          </ul>
+        )}
         {d.orders.filter((o) => !o.receipt_received_at).map((o) => (
           <ActionForm key={o.id} action={receipt.bind(null, o.id)} className="mt-3 flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-1 text-caption font-medium">{t("portal.receipt")} — <span className="font-mono">{o.ref}</span> ({fmtDate(o.receipt_due_at)})<input type="file" name="file" required /></label>
+            <FileInput label={`${t("portal.receipt")} — ${o.ref} (${fmtDate(o.receipt_due_at)})`} name="file" required />
             <SubmitButton variant="secondary">{t("portal.receipt")}</SubmitButton>
           </ActionForm>
         ))}
       </Card>
+      {d.fr && d.fr.status !== "returned" && (
+        <Alert tone={d.fr.status === "accepted" ? "success" : "info"} title={t(d.fr.status === "accepted" ? "portal.finalAccepted" : "portal.finalSubmitted")} />
+      )}
       {(d.p.status === "active" && allDelivered && (!d.fr || d.fr.status === "returned")) && (
         <Card>
           <CardTitle>{t("portal.finalReport")}</CardTitle>
