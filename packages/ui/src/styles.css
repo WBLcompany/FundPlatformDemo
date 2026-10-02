@@ -1,0 +1,12 @@
+/* App entry CSS imports this after `@import "tailwindcss"`. */
+@import "@wbl/tokens/theme.css";
+
+@source "./";
+
+@layer base {
+  html { font-family: var(--font-arabic); color: var(--color-text); background: var(--color-bg); }
+  body { font-size: var(--text-body); line-height: var(--text-body--line-height); }
+  :lang(en), [lang="en"] { font-family: var(--font-latin); }
+  .font-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+}

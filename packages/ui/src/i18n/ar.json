@@ -1,0 +1,58 @@
+{
+  "ai": {
+    "badge": "مانح",
+    "badgeLabel": "اقتراح مانح",
+    "edited": "عدّلها الأخصائي",
+    "originalValue": "القيمة الأصلية: {value}",
+    "accept": "اقبل",
+    "edit": "عدّل",
+    "dismiss": "تجاهل",
+    "save": "احفظ",
+    "cancel": "ألغِ",
+    "source": "ما مصدر هذا؟",
+    "helpful": "مفيد",
+    "notHelpful": "غير مفيد",
+    "feedbackReason": "ما السبب؟",
+    "feedbackSend": "أرسل التقييم",
+    "feedbackThanks": "سُجّل تقييمك",
+    "pending": "مانح يجهّز…",
+    "pendingEta": "الوقت المتوقع: {eta}",
+    "manualNow": "اعمل يدوياً الآن",
+    "failed": "تعذّر",
+    "failedReason": "السبب: {reason}",
+    "manualFallback": "أكمل يدوياً",
+    "noEvidencePosition": "بلا موضع",
+    "evidence": "الدليل",
+    "evidencePage": "صفحة {page}",
+    "score": {
+      "criterion": "المعيار",
+      "weight": "الوزن",
+      "manih": "درجة مانح",
+      "rationale": "المبرر",
+      "human": "درجتك",
+      "diff": "الفرق",
+      "hidden": "محجوبة حتى تسجّل تقييمك"
+    },
+    "brief": "الخلاصة الآن"
+  },
+  "common": {
+    "close": "أغلق",
+    "loading": "يُحمَّل…",
+    "empty": "لا شيء هنا الآن.",
+    "noPermission": "لا تملك صلاحية الاطلاع.",
+    "required": "مطلوب",
+    "activity": "النشاط",
+    "openMenu": "افتح القائمة",
+    "mainNav": "التنقل الرئيسي",
+    "demoData": "بيانات توضيحية",
+    "poweredBy": "مشغّل بواسطة وبل"
+  },
+  "status": {
+    "done": "مكتمل",
+    "active": "قيد العمل",
+    "near": "يقترب",
+    "late": "متأخر",
+    "rejected": "مرفوض",
+    "neutral": "—"
+  }
+}
