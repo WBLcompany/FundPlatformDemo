@@ -1,0 +1,10 @@
+{
+  "name": "@wbl/kernel",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./*": "./src/*/index.ts" },
+  "scripts": { "lint": "eslint src", "typecheck": "tsc --noEmit", "test": "vitest run" },
+  "dependencies": { "@wbl/domain": "workspace:*", "pg": "8.23.1", "zod": "4.6.5" },
+  "devDependencies": { "@types/node": "^22.10.0", "@types/pg": "^8.15.0" }
+}

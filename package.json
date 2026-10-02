@@ -2,7 +2,9 @@
   "name": "wbl-grants-platform",
   "private": true,
   "packageManager": "pnpm@10.28.0",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "turbo run dev --filter=@wbl/web --filter=@wbl/worker",
     "build": "turbo run build",
@@ -16,7 +18,8 @@
     "db:migration": "node scripts/db.mjs new",
     "evals": "pnpm --filter @wbl/evals run evals",
     "prototype": "pnpm --filter @wbl/prototype dev",
-    "tokens": "pnpm --filter @wbl/tokens build"
+    "tokens": "pnpm --filter @wbl/tokens build",
+    "seed:gen": "tsx scripts/gen-seed.ts"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
@@ -26,6 +29,9 @@
     "turbo": "2.11.7",
     "typescript": "5.9.3",
     "typescript-eslint": "8.71.0",
-    "vitest": "5.0.3"
+    "vitest": "5.0.3",
+    "tsx": "4.23.15",
+    "@wbl/domain": "workspace:*",
+    "@types/node": "^22.10.0"
   }
 }

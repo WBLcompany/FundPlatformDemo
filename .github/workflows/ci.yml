@@ -1,0 +1,33 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      DATABASE_ADMIN_URL: postgres://postgres@localhost:54329/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - name: Postgres 16 + pgTAP + pg_trgm
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-16 postgresql-contrib postgresql-16-pgtap libtap-parser-sourcehandler-pgtap-perl
+          sudo mkdir -p /var/lib/pgtest && sudo chown postgres /var/lib/pgtest
+          sudo -u postgres /usr/lib/postgresql/16/bin/initdb -D /var/lib/pgtest -U postgres --auth=trust -E UTF8 --locale=C.UTF-8
+          sudo -u postgres /usr/lib/postgresql/16/bin/pg_ctl -D /var/lib/pgtest -o "-p 54329 -k /tmp" -l /tmp/pg.log start
+      - run: pnpm install --frozen-lockfile
+      - name: Seed is in sync with its generator
+        run: pnpm seed:gen && git diff --exit-code supabase/seed
+      - run: pnpm verify
+      - name: Build web
+        run: pnpm --filter @wbl/web build
+      - name: Playwright — full cycle, AI mock and AI disabled
+        run: pnpm test:e2e
+        env: { PLAYWRIGHT_CHROMIUM: "" }
+      - name: Manih evals
+        run: pnpm evals

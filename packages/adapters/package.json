@@ -1,0 +1,10 @@
+{
+  "name": "@wbl/adapters",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./*": "./src/*/index.ts" },
+  "scripts": { "lint": "eslint src", "typecheck": "tsc --noEmit", "test": "vitest run" },
+  "dependencies": { "zod": "4.6.5" },
+  "devDependencies": { "@types/node": "^22.10.0" }
+}

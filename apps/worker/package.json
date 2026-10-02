@@ -1,0 +1,21 @@
+{
+  "name": "@wbl/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@wbl/adapters": "workspace:*",
+    "@wbl/domain": "workspace:*",
+    "@wbl/kernel": "workspace:*",
+    "pg": "8.23.1",
+    "tsx": "4.23.15"
+  },
+  "devDependencies": { "@types/node": "^22.10.0", "@types/pg": "^8.15.0" }
+}
