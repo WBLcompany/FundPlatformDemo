@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build",
-    "start": "next start -p 3000",
-    "lint": "eslint app lib components",
+    "build": "next build && node scripts/assemble-standalone.mjs",
+    "start": "node .next/standalone/apps/web/server.js",
+    "lint": "eslint app lib components scripts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "e2e": "playwright test"

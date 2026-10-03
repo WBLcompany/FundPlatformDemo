@@ -11,10 +11,10 @@ export default async function Associations() {
     <div className="flex flex-col gap-4">
       <PageHeader title={t("nav.associations")} />
       <Table caption={t("nav.associations")} rows={rows} rowKey={(r) => r.id} columns={[
-        { key: "n", header: t("nav.associations"), cell: (r) => <a className="text-link hover:underline" href={`/staff/associations/${r.id}`}>{r.name}</a> },
+        { key: "n", header: t("col.name"), cell: (r) => <a className="text-link hover:underline" href={`/staff/associations/${r.id}`}>{r.name}</a> },
         { key: "l", header: "#", mono: true, cell: (r) => r.license_no },
-        { key: "c", header: "", cell: (r) => r.city ?? "—" },
-        { key: "s", header: "", cell: (r) => <StatusBadge tone={r.status === "active" ? "done" : r.status === "pending_review" ? "near" : "late"}>{L[r.status]}</StatusBadge> },
+        { key: "c", header: t("col.city"), cell: (r) => r.city ?? "—" },
+        { key: "s", header: t("col.state"), cell: (r) => <StatusBadge tone={r.status === "active" ? "done" : r.status === "pending_review" ? "near" : "late"}>{L[r.status]}</StatusBadge> },
       ]} />
     </div>
   );

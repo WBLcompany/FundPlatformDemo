@@ -14,10 +14,10 @@ export default async function Projects() {
       <PageHeader title={t("nav.projects")} />
       <Table caption={t("nav.projects")} rows={rows} rowKey={(r) => r.id} columns={[
         { key: "r", header: "#", mono: true, cell: (r) => <a className="text-link hover:underline" href={`/staff/projects/${r.id}`}>{r.ref}</a> },
-        { key: "t", header: t("nav.projects"), cell: (r) => r.title },
-        { key: "a", header: t("nav.associations"), cell: (r) => r.association },
+        { key: "t", header: t("col.title"), cell: (r) => r.title },
+        { key: "a", header: t("col.association"), cell: (r) => r.association },
         { key: "m", header: t("staff.amount"), mono: true, cell: (r) => formatMoney(r.approved_halalas, false) },
-        { key: "s", header: "", cell: (r) => <StatusBadge tone={projectTone[r.status] ?? "neutral"}>{PROJECT_LABEL[r.status] ?? r.status}</StatusBadge> },
+        { key: "s", header: t("col.state"), cell: (r) => <StatusBadge tone={projectTone[r.status] ?? "neutral"}>{PROJECT_LABEL[r.status] ?? r.status}</StatusBadge> },
       ]} />
     </div>
   );

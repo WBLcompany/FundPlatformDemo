@@ -48,7 +48,7 @@ export default async function Users() {
             <input type="date" name="until" defaultValue={r.absent_until ?? ""} aria-label={t("staff.absentUntil")} className="rounded-sm border border-border px-2 py-1" />
             <SubmitButton variant="secondary">{t("app.saved")}</SubmitButton>
           </ActionForm>) },
-        { key: "d", header: "", cell: (r) => r.active ? (r.open > 0 ? <span className="text-caption text-warning-text">{cycle.canDeactivate(r.open).reason}</span> : <form action={deactivate.bind(null, r.id, r.open)}><button className="text-caption underline">✕</button></form>) : "—" },
+        { key: "d", header: t("col.action"), cell: (r) => r.active ? (r.open > 0 ? <span className="text-caption text-warning-text">{cycle.canDeactivate(r.open).reason}</span> : <form action={deactivate.bind(null, r.id, r.open)}><button className="text-caption underline">✕</button></form>) : "—" },
       ]} />
       <Card>
         <CardTitle>{t("settings.addUser")}</CardTitle>

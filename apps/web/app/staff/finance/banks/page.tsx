@@ -17,10 +17,10 @@ export default async function Banks() {
       <PageHeader title={t("staff.banksTitle")} />
       {rows.length === 0 ? <EmptyState title={t("staff.noBanks")} /> : (
         <Table caption={t("staff.banksTitle")} rows={rows} rowKey={(r) => r.id} columns={[
-          { key: "a", header: t("nav.associations"), cell: (r) => r.association },
+          { key: "a", header: t("col.association"), cell: (r) => r.association },
           { key: "b", header: t("portal.bankName"), cell: (r) => r.bank_name },
           { key: "i", header: t("portal.iban"), mono: true, cell: (r) => `•••• ${r.iban_last4}` },
-          { key: "x", header: "", cell: (r) => <form action={ack.bind(null, r.id)}><SubmitButton variant="secondary">{t("staff.acknowledge")}</SubmitButton></form> },
+          { key: "x", header: t("col.action"), cell: (r) => <form action={ack.bind(null, r.id)}><SubmitButton variant="secondary">{t("staff.acknowledge")}</SubmitButton></form> },
         ]} />
       )}
     </div>

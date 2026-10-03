@@ -1,0 +1,100 @@
+# Self-hosted deployment (D-23: Q-1 «local» for now). One server, everything inside it.
+#   cp deploy/.env.example deploy/.env   # fill every value
+#   docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+# Put a TLS reverse proxy (nginx, Caddy) in front of port 3000; nothing else is published.
+name: wbl-grants
+
+x-app-env: &app-env
+  DATABASE_URL: postgres://authenticator:${AUTHENTICATOR_PASSWORD}@db:5432/${POSTGRES_DB}
+  APP_URL: ${APP_URL}
+  SESSION_SECRET: ${SESSION_SECRET}
+  DATA_MASTER_KEY: ${DATA_MASTER_KEY}
+  MANIH_WEBHOOK_SECRET: ${MANIH_WEBHOOK_SECRET}
+  MANIH_URL: ${MANIH_URL:-}
+  MANIH_API_KEY: ${MANIH_API_KEY:-}
+  OTP_SALT: ${OTP_SALT}
+  OPERATOR_TOKEN: ${OPERATOR_TOKEN}
+  DEFAULT_PORTAL: ${DEFAULT_PORTAL:-almulhi}
+  STORAGE_ROOT: /data/storage
+  CLAMD_HOST: clamav
+  CLAMD_PORT: "3310"
+  GOTENBERG_URL: http://gotenberg:3000
+  AUTHENTICA_API_KEY: ${AUTHENTICA_API_KEY:-}
+  ENTITIES_URL: ${ENTITIES_URL:-}
+  ENTITIES_API_KEY: ${ENTITIES_API_KEY:-}
+  EMAIL_API_URL: ${EMAIL_API_URL:-}
+  EMAIL_API_KEY: ${EMAIL_API_KEY:-}
+  EMAIL_FROM: ${EMAIL_FROM:-}
+  WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID:-}
+  WHATSAPP_TOKEN: ${WHATSAPP_TOKEN:-}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${POSTGRES_DB}"]
+      interval: 5s
+      retries: 20
+
+  # Forward-only migrations with a ledger; runs once per deploy, before web and worker start.
+  migrate:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: worker }
+    working_dir: /repo
+    command: ["node", "scripts/migrate.mjs", "--self-hosted"]
+    environment:
+      DATABASE_ADMIN_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      AUTHENTICATOR_PASSWORD: ${AUTHENTICATOR_PASSWORD}
+    depends_on: { db: { condition: service_healthy } }
+    restart: "no"
+
+  web:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: web }
+    restart: unless-stopped
+    environment: *app-env
+    volumes: [storage:/data/storage]
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on: { migrate: { condition: service_completed_successfully } }
+
+  worker:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: worker }
+    restart: unless-stopped
+    environment: *app-env
+    volumes: [storage:/data/storage]
+    depends_on: { migrate: { condition: service_completed_successfully }, clamav: { condition: service_started } }
+
+  clamav:
+    image: clamav/clamav:stable
+    restart: unless-stopped
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+
+  # R-116: a backup every day, 30 kept. Mount BACKUP_DIR on a disk other than the database's.
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+      STORAGE_ROOT: /data/storage
+      BACKUP_DIR: /backups
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-30}
+    volumes:
+      - storage:/data/storage:ro
+      - ${BACKUP_DIR:-./backups}:/backups
+      - ./backup.sh:/backup.sh:ro
+    entrypoint: ["sh", "-c", "while true; do sh /backup.sh || echo 'backup failed'; sleep 86400; done"]
+    depends_on: { db: { condition: service_healthy } }
+
+volumes:
+  pgdata:
+  storage:

@@ -25,11 +25,11 @@ export default async function Supplier() {
     <PortalShell donorName={me.donor.name} nav={[{ href: "/supplier", label: t("nav.orders"), icon: "suppliers", active: true }]} user={<form action="/logout" method="post"><button className="text-link underline">{t("app.logout")}</button></form>}>
       <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6 pb-24">
         <PageHeader title={t("nav.orders")} />
-        {rows.length === 0 ? <EmptyState title={t("nav.orders")} /> : <Table caption={t("nav.orders")} rows={rows} rowKey={(r) => r.id} columns={[
+        {rows.length === 0 ? <EmptyState title={t("supplier.noOrders")} /> : <Table caption={t("nav.orders")} rows={rows} rowKey={(r) => r.id} columns={[
           { key: "r", header: "#", mono: true, cell: (r) => r.ref },
-          { key: "i", header: "", cell: (r) => `${r.item} × ${r.quantity}` },
-          { key: "s", header: "", cell: (r) => <StatusBadge tone={r.status === "delivered" ? "done" : "active"}>{r.status}</StatusBadge> },
-          { key: "c", header: "", cell: (r) => r.status === "issued" ? <ActionForm action={confirm.bind(null, r.id)} className="flex items-end gap-2"><TextField label="#" name="qty" type="number" dir="ltr" defaultValue={String(r.quantity)} /><SubmitButton variant="secondary">✓</SubmitButton></ActionForm> : "—" },
+          { key: "i", header: t("col.item"), cell: (r) => t("supplier.itemQty", { item: r.item, qty: r.quantity }) },
+          { key: "s", header: t("col.state"), cell: (r) => <StatusBadge tone={r.status === "delivered" || r.status === "paid" ? "done" : r.status === "disputed" ? "late" : "active"}>{t(`supplier.status.${r.status}`)}</StatusBadge> },
+          { key: "c", header: t("col.action"), cell: (r) => r.status === "issued" ? <ActionForm action={confirm.bind(null, r.id)} className="flex items-end gap-2"><TextField label={t("supplier.confirmQty")} name="qty" type="number" dir="ltr" defaultValue={String(r.quantity)} /><SubmitButton variant="secondary">{t("supplier.confirm")}</SubmitButton></ActionForm> : "—" },
         ]} />}
       </div>
     </PortalShell>

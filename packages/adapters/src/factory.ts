@@ -1,3 +1,4 @@
+import path from "node:path";
 import { HttpManihClient, MockManihClient, type ManihClient } from "./manih";
 import { AuthenticaOtpSender, MockOtpSender, type OtpSender } from "./otp";
 import { HttpEntitiesRegistry, MockEntitiesRegistry, type EntitiesRegistry } from "./entities";
@@ -14,6 +15,17 @@ export type Adapters = { manih: ManihClient; otp: OtpSender; entities: EntitiesR
  * reaches an external service unless its variables are set on purpose
  * ("لا ترسل بيانات حقيقية لأي خدمة خارجية من بيئة التطوير").
  */
+/**
+ * The web server and the worker must resolve the same file store. A relative root is resolved
+ * against each process's working directory (Next's standalone server changes its own), so in
+ * production the root must be absolute.
+ */
+function storageRoot(env: Record<string, string | undefined>): string {
+  const root = env.STORAGE_ROOT ?? ".storage";
+  if (env.NODE_ENV === "production" && !path.isAbsolute(root)) throw new Error("STORAGE_ROOT must be an absolute path in production");
+  return root;
+}
+
 export function createAdapters(env: Record<string, string | undefined>): Adapters {
   const secret = env.MANIH_WEBHOOK_SECRET ?? (env.NODE_ENV === "production" ? "" : "dev-manih-secret");
   if (!secret) throw new Error("MANIH_WEBHOOK_SECRET is required in production");
@@ -23,7 +35,7 @@ export function createAdapters(env: Record<string, string | undefined>): Adapter
     entities: env.ENTITIES_URL && env.ENTITIES_API_KEY ? new HttpEntitiesRegistry(env.ENTITIES_URL, env.ENTITIES_API_KEY) : new MockEntitiesRegistry(),
     email: env.EMAIL_API_URL && env.EMAIL_API_KEY ? new HttpEmailSender(env.EMAIL_API_URL, env.EMAIL_API_KEY, env.EMAIL_FROM ?? "no-reply@wbl.sa") : new MemoryEmailSender(),
     whatsapp: env.WHATSAPP_PHONE_ID && env.WHATSAPP_TOKEN ? new MetaWhatsAppSender(env.WHATSAPP_PHONE_ID, env.WHATSAPP_TOKEN) : new MemoryWhatsAppSender(),
-    storage: new LocalStorage(env.STORAGE_ROOT ?? ".storage"),
+    storage: new LocalStorage(storageRoot(env)),
     av: env.CLAMD_HOST ? new ClamdScanner(env.CLAMD_HOST, Number(env.CLAMD_PORT ?? 3310)) : new MockScanner(),
     docgen: env.GOTENBERG_URL ? new GotenbergDocGenerator(env.GOTENBERG_URL) : new HtmlDocGenerator(),
   };

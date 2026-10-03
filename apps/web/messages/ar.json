@@ -398,5 +398,28 @@
     "approved": "موافقة بمبلغ {amount}",
     "rejected": "اعتذار",
     "pending": "لم يصدر بعد"
+  },
+  "col": {
+    "title": "العنوان",
+    "association": "الجمعية",
+    "state": "الحالة",
+    "action": "الإجراء",
+    "name": "الاسم",
+    "city": "المدينة",
+    "item": "الصنف"
+  },
+  "supplier": {
+    "itemQty": "{item} × {qty}",
+    "confirmQty": "الكمية المؤكدة",
+    "confirm": "أكّد الطلب",
+    "noOrders": "لا أوامر توريد الآن.",
+    "status": {
+      "issued": "صادر",
+      "supplier_confirmed": "أكّده المورّد",
+      "association_confirmed": "أكّدت الجمعية الاستلام",
+      "delivered": "سُلّم",
+      "disputed": "عليه خلاف",
+      "paid": "مدفوع"
+    }
   }
 }

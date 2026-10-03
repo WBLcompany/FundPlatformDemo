@@ -40,7 +40,7 @@ export default async function Settings() {
         <Table caption={t("settings.support")} rows={d.grants} rowKey={(g) => g.id} columns={[
           { key: "e", header: t("settings.operatorEmail"), cell: (g) => g.operator_email },
           { key: "r", header: t("settings.reason"), cell: (g) => g.reason },
-          { key: "x", header: "", cell: (g) => g.revoked_at ? "—" : <form action={revoke.bind(null, g.id)}><button className="text-link underline">{t("settings.revoke")}</button></form> },
+          { key: "x", header: t("col.action"), cell: (g) => g.revoked_at ? "—" : <form action={revoke.bind(null, g.id)}><button className="text-link underline">{t("settings.revoke")}</button></form> },
         ]} />
         <ActionForm action={grant} className="mt-3 flex flex-wrap items-end gap-3"><TextField label={t("settings.operatorEmail")} name="email" type="email" dir="ltr" required /><TextField label={t("settings.reason")} name="reason" required /><TextField label={t("settings.hours")} name="hours" type="number" dir="ltr" defaultValue="4" /><SubmitButton variant="secondary">{t("settings.grantSupport")}</SubmitButton></ActionForm>
       </Card>

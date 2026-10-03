@@ -1,3 +1,4 @@
+import path from "node:path";
 import { defineConfig } from "@playwright/test";
 
 /*
@@ -8,7 +9,7 @@ import { defineConfig } from "@playwright/test";
 const PORT = Number(process.env.E2E_PORT ?? 3200);
 const DB = "grants_e2e";
 const DATABASE_URL = `postgres://authenticator:authenticator@localhost:54329/${DB}`;
-const env = { DATABASE_URL, APP_URL: `http://localhost:${PORT}`, STORAGE_ROOT: "../../.storage-e2e", OPERATOR_TOKEN: "e2e-operator", SESSION_SECRET: "e2e-session-secret-not-for-production", DATA_MASTER_KEY: "e2e-master-key-not-for-production", MANIH_WEBHOOK_SECRET: "e2e-manih-secret", OTP_SALT: "e2e-otp-salt", SWEEP_INTERVAL_MS: "5000", OUTBOX_INTERVAL_MS: "500", SCAN_INTERVAL_MS: "500" };
+const env = { DATABASE_URL, APP_URL: `http://localhost:${PORT}`, STORAGE_ROOT: path.resolve(import.meta.dirname, "../../.storage-e2e"), OPERATOR_TOKEN: "e2e-operator", SESSION_SECRET: "e2e-session-secret-not-for-production", DATA_MASTER_KEY: "e2e-master-key-not-for-production", MANIH_WEBHOOK_SECRET: "e2e-manih-secret", OTP_SALT: "e2e-otp-salt", SWEEP_INTERVAL_MS: "5000", OUTBOX_INTERVAL_MS: "500", SCAN_INTERVAL_MS: "500" };
 
 export default defineConfig({
   testDir: "./e2e",
@@ -28,7 +29,8 @@ export default defineConfig({
     launchOptions: process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {},
   },
   webServer: [
-    { command: `npx next start -p ${PORT}`, port: PORT, env, reuseExistingServer: false, timeout: 60_000 },
+    // The same standalone server the container runs (pnpm build assembles it).
+    { command: "node .next/standalone/apps/web/server.js", port: PORT, env: { ...env, PORT: String(PORT), HOSTNAME: "127.0.0.1" }, reuseExistingServer: false, timeout: 60_000 },
     { command: "npx tsx ../worker/src/main.ts", env, reuseExistingServer: false, wait: { stdout: /worker_started/ }, timeout: 60_000 },
   ],
 });

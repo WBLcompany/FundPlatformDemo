@@ -13,9 +13,9 @@ export default async function MyProjects() {
       <PageHeader title={t("nav.myProjects")} />
       {rows.length === 0 ? <EmptyState title={t("nav.myProjects")} /> : <Table caption={t("nav.myProjects")} rows={rows} rowKey={(r) => r.id} columns={[
         { key: "r", header: "#", mono: true, cell: (r) => <a className="text-link hover:underline" href={`/portal/projects/${r.id}`}>{r.ref}</a> },
-        { key: "t", header: t("nav.myProjects"), cell: (r) => r.title },
+        { key: "t", header: t("col.title"), cell: (r) => r.title },
         { key: "m", header: t("staff.amount"), mono: true, cell: (r) => formatMoney(r.approved_halalas, false) },
-        { key: "s", header: "", cell: (r) => <StatusBadge tone={projectTone[r.status] ?? "neutral"}>{PROJECT_LABEL[r.status]}</StatusBadge> },
+        { key: "s", header: t("col.state"), cell: (r) => <StatusBadge tone={projectTone[r.status] ?? "neutral"}>{PROJECT_LABEL[r.status]}</StatusBadge> },
       ]} />}
     </div>
   );
