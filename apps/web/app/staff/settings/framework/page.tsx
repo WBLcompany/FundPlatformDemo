@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { Alert, Card, CardTitle, PageHeader, TextArea, TextField } from "@wbl/ui";
 import { FrameworkVersionView } from "@wbl/ui/views";
-import { framework } from "@wbl/domain";
+import { framework, iam } from "@wbl/domain";
 import { frameworkService } from "@wbl/services";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
 import { asUser } from "@/lib/auth";
@@ -16,7 +16,9 @@ export default async function Framework() {
     const draft = await frameworkService.getDraft(ctx);
     const versions = await frameworkService.listVersions(ctx);
     const v = framework.validateConfig(draft.config);
-    return { draft, versions, errors: v.ok ? [] : v.errors };
+    const canEdit = iam.can(ctx.actor, "framework.edit", { tenantId: ctx.actor.tenantId });
+    const canApprove = iam.can(ctx.actor, "framework.approve", { tenantId: ctx.actor.tenantId });
+    return { draft, versions, errors: v.ok ? [] : v.errors, canEdit, canApprove };
   });
   async function save(_: unknown, fd: FormData) {
     "use server";
@@ -43,17 +45,22 @@ export default async function Framework() {
       <PageHeader title={t("settings.draftEditor")} description={t("settings.draftHint")} />
       {d.errors.length > 0 && <Alert tone="warning" title={t("settings.errors")}><ul className="list-disc ps-5">{d.errors.map((e) => <li key={e} dir="ltr" className="font-mono">{e}</li>)}</ul></Alert>}
       <Card>
-        <ActionForm action={save}>
-          <input type="hidden" name="revision" value={d.draft.revision} />
-          <TextArea label={t("settings.draftEditor")} name="config" defaultValue={JSON.stringify(d.draft.config, null, 2)} className="min-h-[480px] font-mono text-caption" dir="ltr" />
-          <SubmitButton variant="secondary">{t("settings.saveDraft")}</SubmitButton>
-        </ActionForm>
+        {d.canEdit ? (
+          <ActionForm action={save}>
+            <input type="hidden" name="revision" value={d.draft.revision} />
+            <TextArea label={t("settings.draftEditor")} name="config" defaultValue={JSON.stringify(d.draft.config, null, 2)} className="min-h-[480px] font-mono text-caption" dir="ltr" />
+            <SubmitButton variant="secondary">{t("settings.saveDraft")}</SubmitButton>
+          </ActionForm>
+        ) : (
+          // The approver reads the draft they are asked to approve; editing stays with the admin.
+          <TextArea label={t("settings.draftEditor")} readOnly defaultValue={JSON.stringify(d.draft.config, null, 2)} className="min-h-[480px] font-mono text-caption" dir="ltr" />
+        )}
       </Card>
       <Card><ActionForm action={simulate}><SubmitButton variant="secondary">{t("settings.simulate")}</SubmitButton></ActionForm></Card>
-      <Card>
+      {d.canApprove && <Card>
         <CardTitle>{t("settings.approve")}</CardTitle>
         <ActionForm action={approve}><TextField label={t("settings.reason")} name="reason" required /><SubmitButton>{t("settings.approve")}</SubmitButton></ActionForm>
-      </Card>
+      </Card>}
       {latest && <FrameworkVersionView number={latest.number} approvedBy={latest.approved_by_name} approvedAt={latest.approved_at} reason={latest.reason} changes={latest.changes} />}
       <Card><CardTitle>{t("settings.versions")}</CardTitle><ul className="flex flex-col gap-1 text-body-sm">{d.versions.map((v) => <li key={v.id}><span className="font-mono">{v.number}</span> — {v.reason} — {v.approved_by_name}</li>)}</ul></Card>
     </div>

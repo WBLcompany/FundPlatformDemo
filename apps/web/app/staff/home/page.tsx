@@ -1,7 +1,7 @@
 import { t } from "@/lib/i18n";
 import { iam } from "@wbl/domain";
 import { queries } from "@wbl/services";
-import { ExecutiveHomeView, ManagerHomeView } from "@wbl/ui/views";
+import { ManagerHomeView } from "@wbl/ui/views";
 import { resolveRef } from "@wbl/kernel";
 import { asUser } from "@/lib/auth";
 import { appTone, statusLabel } from "@/lib/vm/status";
@@ -22,10 +22,9 @@ export default async function Home() {
   const pipeline = pipelineLabels.map((s) => ({ key: s, label: statusLabel(s), count: d.home.pipeline.find((p) => p.status === s)?.n ?? 0, href: `/staff/applications?status=${s}` }));
   const waiting = d.awaiting.filter((i) => i.subject_kind === "application").map((i) => ({ id: i.subject_id, ref: i.ref ?? "", title: i.title ?? "", association: i.association, program: "", stage: statusLabel("in_approval"), stageTone: appTone.in_approval!, requestedHalalas: i.amount_halalas, href: `/staff/applications/${i.subject_id}` }));
   if (d.exec) {
-    return <OrderClient initial={d.home.order}>{(order, setOrder) => (
-      <ExecutiveHomeView order={order} onReorder={setOrder} decide={waiting}
-        money={[{ label: t("home.approved"), valueHalalas: d.home.money.approved, href: "/staff/applications?status=approved" }, { label: t("home.disbursed"), valueHalalas: d.home.money.disbursed, href: "/staff/reports" }, { label: t("home.available"), valueHalalas: d.home.money.available, href: null }]}
-        team={d.team} />)}</OrderClient>;
+    return <OrderClient initial={d.home.order} decide={waiting}
+      money={[{ label: t("home.approved"), valueHalalas: d.home.money.approved, href: "/staff/applications?status=approved" }, { label: t("home.disbursed"), valueHalalas: d.home.money.disbursed, href: "/staff/reports" }, { label: t("home.available"), valueHalalas: d.home.money.available, href: null }]}
+      team={d.team} />;
   }
   return <ManagerHomeView waiting={[...waiting, ...d.home.late.map((r) => ({ id: r.id, ref: r.ref, title: r.title, association: r.association, program: r.program, stage: statusLabel(r.status), stageTone: "late" as const, requestedHalalas: r.requested_halalas, href: `/staff/applications/${r.id}` }))]}
     pipeline={pipeline} team={d.team} reassignHref="/staff/reassign"

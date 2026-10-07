@@ -1,10 +1,11 @@
-import { cycle, DomainError, framework } from "@wbl/domain";
+import { cycle, DomainError, framework, iam } from "@wbl/domain";
 import { authorize, currentVersion, riyadhToday, type Ctx } from "./context";
 import { requestTask } from "./ai";
 
 /** G1–G4, R-001–R-006, R-087: the editable draft, its validation, and freezing it into a version. */
+/** The draft is read by whoever edits it and by whoever approves it (R-087: the approver sees what they approve). */
 export async function getDraft(ctx: Ctx) {
-  authorize(ctx, "framework.edit", {});
+  if (!iam.can(ctx.actor, "framework.approve", { tenantId: ctx.actor.tenantId })) authorize(ctx, "framework.edit", {});
   const d = await ctx.tx.maybe<{ id: string; config: framework.FrameworkConfig; revision: number; base_version_id: string | null; updated_at: string }>(
     "select id, config, revision, base_version_id, updated_at from framework.drafts");
   if (d) return d;

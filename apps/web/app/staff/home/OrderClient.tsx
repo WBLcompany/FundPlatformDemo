@@ -1,11 +1,15 @@
 "use client";
-import { useState, useTransition, type ReactNode } from "react";
+import { useState, useTransition, type ComponentProps } from "react";
+import { ExecutiveHomeView } from "@wbl/ui/views";
 import { saveOrderAction } from "./actions";
 
-type K = "decide" | "money" | "team";
-/** R-082: the executive's personal order, saved per person. */
-export function OrderClient({ initial, children }: { initial: K[]; children: (order: K[], set: (o: K[]) => void) => ReactNode }) {
+type Props = ComponentProps<typeof ExecutiveHomeView>;
+type K = Props["order"][number];
+/** R-082: the executive's home in their personal order, saved per person. Takes data only: a
+ * function cannot cross from the server page into a client component. */
+export function OrderClient({ initial, decide, money, team }: { initial: K[] } & Omit<Props, "order" | "onReorder">) {
   const [order, setOrder] = useState(initial);
   const [, start] = useTransition();
-  return <>{children(order, (o) => { setOrder(o); start(() => { void saveOrderAction(o); }); })}</>;
+  return <ExecutiveHomeView order={order} decide={decide} money={money} team={team}
+    onReorder={(o) => { setOrder(o); start(() => { void saveOrderAction(o); }); }} />;
 }
