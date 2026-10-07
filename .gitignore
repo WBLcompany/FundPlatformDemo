@@ -17,3 +17,4 @@ test-results/
 playwright-report/
 .storage-e2e/
 evals/results/
+.tour/
